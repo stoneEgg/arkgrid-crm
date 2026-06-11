@@ -1,0 +1,26 @@
+{
+  "name": "ArkGrid CRM",
+  "short_name": "ArkGrid",
+  "description": "ArkGrid renewable energy installation CRM and customer workflow app.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#101a27",
+  "theme_color": "#101a27",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "arkgrid-symbol.png",
+      "sizes": "760x760",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "arkgrid-logo.png",
+      "sizes": "1100x1100",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

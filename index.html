@@ -1,0 +1,3528 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ArkGrid CRM</title>
+  <meta name="theme-color" content="#101a27">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ArkGrid CRM">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="arkgrid-symbol.png">
+  <style>
+    :root {
+      --ink: #172331;
+      --muted: #68798a;
+      --line: #d6e0e9;
+      --soft: #f2f7fa;
+      --panel: #ffffff;
+      --teal: #18cfe3;
+      --green: #6ce7f5;
+      --gold: #8fb7d5;
+      --red: #d65b67;
+      --blue: #244f78;
+      --plum: #7a87c9;
+      --navy: #101a27;
+      --navy-2: #203348;
+      --ice: #e9fbff;
+      --shadow: 0 16px 40px rgba(16, 26, 39, .11);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        linear-gradient(135deg, rgba(24,207,227,.13), transparent 34%),
+        linear-gradient(315deg, rgba(36,79,120,.14), transparent 38%),
+        #eef5f8;
+      overflow-x: hidden;
+    }
+
+    button, input, select { font: inherit; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background:
+        linear-gradient(160deg, rgba(46, 75, 104, .9), transparent 42%),
+        linear-gradient(330deg, rgba(24, 207, 227, .16), transparent 35%),
+        var(--navy);
+      color: var(--ice);
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+
+    .mark {
+      width: 54px;
+      height: 54px;
+      border-radius: 8px;
+      display: block;
+      object-fit: cover;
+      object-position: center;
+      border: 1px solid rgba(24,207,227,.35);
+      box-shadow: 0 0 22px rgba(24,207,227,.28);
+    }
+
+    .brand strong { display: block; font-size: 16px; }
+    .brand span { color: #b8dbe5; font-size: 12px; }
+
+    .mode-badges {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .mode-badge {
+      height: 22px;
+      min-width: 42px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0 8px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #071821;
+      background: var(--teal);
+      box-shadow: 0 0 16px rgba(24,207,227,.25);
+      cursor: pointer;
+      transition: transform .18s ease, opacity .18s ease, box-shadow .18s ease;
+    }
+
+    .mode-badge:hover { transform: translateY(-1px); }
+    .mode-badge:not(.active) { opacity: .58; }
+    .mode-badge.active { box-shadow: 0 0 20px rgba(24,207,227,.45); }
+
+    .mode-badge.manual {
+      color: var(--ice);
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: none;
+    }
+
+    .mode-badge.manual.active {
+      background: rgba(255,255,255,.24);
+      box-shadow: 0 0 14px rgba(255,255,255,.12);
+    }
+
+    .mode-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      background: rgba(7, 18, 33, .68);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease;
+    }
+
+    .mode-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mode-modal {
+      width: min(420px, calc(100vw - 32px));
+      border: 1px solid rgba(24,207,227,.35);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      color: var(--ice);
+      background: linear-gradient(160deg, rgba(32,51,72,.96), rgba(16,26,39,.96));
+      box-shadow: 0 28px 80px rgba(0,0,0,.35);
+      transform: translateY(12px) scale(.98);
+      transition: transform .22s ease;
+    }
+
+    .mode-overlay.show .mode-modal { transform: translateY(0) scale(1); }
+
+    .bot-loader {
+      width: 82px;
+      height: 82px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      position: relative;
+      border: 2px solid rgba(24,207,227,.24);
+      box-shadow: 0 0 26px rgba(24,207,227,.25);
+    }
+
+    .bot-loader::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 8px;
+      background: var(--teal);
+      box-shadow: 0 0 24px rgba(24,207,227,.5);
+      animation: botPulse .9s ease-in-out infinite alternate;
+    }
+
+    .bot-loader::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: var(--teal);
+      animation: spin 1s linear infinite;
+    }
+
+    .human-loader {
+      width: 82px;
+      height: 82px;
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      animation: humanSwitch .7s ease-in-out infinite alternate;
+    }
+
+    .human-loader::before {
+      content: "MAN";
+      font-weight: 900;
+      letter-spacing: 0;
+      color: var(--ice);
+    }
+
+    .mode-modal h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .mode-modal p {
+      margin: 0;
+      color: #b8dbe5;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes botPulse { from { transform: scale(.86); border-radius: 12px; } to { transform: scale(1); border-radius: 50%; } }
+    @keyframes humanSwitch { from { transform: translateX(-4px); } to { transform: translateX(4px); } }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav button {
+      color: #bfd3df;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      min-height: 42px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .nav button.active, .nav button:hover {
+      color: white;
+      background: rgba(24,207,227,.14);
+      box-shadow: inset 3px 0 0 var(--teal);
+    }
+
+    .ico {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .side-card {
+      margin-top: auto;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .side-card strong { display: block; margin-bottom: 8px; }
+    .side-card p { color: #b5cedb; font-size: 13px; line-height: 1.45; margin: 0; }
+
+    .quota-card {
+      border: 1px solid rgba(24,207,227,.28);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(24,207,227,.09);
+    }
+
+    .quota-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ice);
+    }
+
+    .quota-card p {
+      margin: 8px 0 0;
+      color: #b5cedb;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .quota-bar {
+      height: 8px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: rgba(255,255,255,.14);
+    }
+
+    .quota-bar span {
+      display: block;
+      height: 100%;
+      width: 18%;
+      background: linear-gradient(90deg, var(--red), var(--teal));
+    }
+
+    .view-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .view-shortcut {
+      min-height: 54px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 8px;
+      background: rgba(255,255,255,.07);
+      color: var(--ice);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      gap: 3px;
+      padding: 8px 4px;
+      text-align: center;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .view-shortcut:hover, .view-shortcut.active {
+      transform: translateY(-1px);
+      border-color: rgba(24,207,227,.55);
+      background: rgba(24,207,227,.14);
+    }
+
+    .view-shortcut .shortcut-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #071821;
+      font-weight: 900;
+      background: var(--teal);
+      box-shadow: 0 0 16px rgba(24,207,227,.3);
+    }
+
+    .view-shortcut span:last-child {
+      font-size: 11px;
+      color: #b8dbe5;
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      position: relative;
+      min-width: 260px;
+    }
+
+    .search input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px 0 38px;
+      background: white;
+      color: var(--ink);
+    }
+
+    .search .ico {
+      position: absolute;
+      left: 12px;
+      top: 11px;
+      color: var(--muted);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 8px;
+      height: 40px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: white;
+      background: var(--teal);
+      color: #071821;
+      box-shadow: 0 10px 24px rgba(24,207,227,.25);
+    }
+
+    .btn.secondary {
+      color: var(--ink);
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .lang-toggle {
+      display: inline-flex;
+      height: 40px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .lang-toggle button {
+      min-width: 42px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .lang-toggle button.active {
+      background: var(--navy-2);
+      color: var(--ice);
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .launch-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(24,207,227,.18), transparent 34%),
+        linear-gradient(150deg, #101a27, #203348 68%, #101a27);
+      color: var(--ice);
+      transition: opacity .4s ease, visibility .4s ease;
+    }
+
+    .launch-overlay.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .launch-card {
+      width: min(520px, calc(100vw - 32px));
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      gap: 14px;
+    }
+
+    .launch-logo {
+      width: 92px;
+      height: 92px;
+      border-radius: 8px;
+      object-fit: cover;
+      box-shadow: 0 0 34px rgba(24,207,227,.45);
+      animation: logoIgnite 1.2s ease both;
+    }
+
+    .launch-card h2 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .launch-card p {
+      margin: 0;
+      color: #c9e9f0;
+      font-size: 16px;
+    }
+
+    .agent-animation {
+      width: 124px;
+      height: 86px;
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .agent-core {
+      position: absolute;
+      left: 37px;
+      top: 14px;
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      background: var(--teal);
+      box-shadow: 0 0 24px rgba(24,207,227,.55);
+      animation: botPulse .72s ease-in-out infinite alternate;
+    }
+
+    .agent-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(24,207,227,.2);
+      border-top-color: var(--teal);
+      animation: spin 1.3s linear infinite;
+    }
+
+    .agent-node {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #e9fbff;
+      box-shadow: 0 0 16px rgba(233,251,255,.6);
+      animation: nodeBlink 1.1s ease-in-out infinite alternate;
+    }
+
+    .agent-node.one { left: 8px; top: 40px; }
+    .agent-node.two { right: 10px; top: 20px; animation-delay: .18s; }
+    .agent-node.three { right: 22px; bottom: 8px; animation-delay: .32s; }
+
+    @keyframes logoIgnite { from { transform: translateY(12px) scale(.92); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    @keyframes nodeBlink { from { transform: scale(.72); opacity: .4; } to { transform: scale(1); opacity: 1; } }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .metric, .panel, .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      padding: 16px;
+      min-height: 112px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .metric label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .delta {
+      color: var(--teal);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(310px, .8fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 16px;
+      min-width: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--muted);
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .chip.active {
+      color: white;
+      border-color: var(--teal);
+      background: var(--teal);
+      color: #071821;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(190px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .lane {
+      min-width: 190px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .lane-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .lead-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+
+    .lead-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(24,207,227,.75);
+    }
+
+    .lead-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #eef7fa;
+      color: #4c6272;
+      white-space: nowrap;
+    }
+
+    .tag.heat { color: #4e6680; background: #e6f4fb; }
+    .tag.solar { color: #087183; background: #d9fbff; }
+    .tag.eco { color: #5a5f9a; background: #eef0ff; }
+    .tag.risk { color: #a33022; background: #fde7e3; }
+    .tag.done { color: #27613c; background: #e3f4e8; }
+    .tag.wait { color: #765612; background: #fff0c7; }
+
+    .tag.ai {
+      color: #071821;
+      background: var(--teal);
+      box-shadow: 0 0 14px rgba(24,207,227,.28);
+    }
+
+    .tag.human {
+      color: #395168;
+      background: #e6edf3;
+    }
+
+    .tag.hybrid {
+      color: #f7fbff;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+    }
+
+    .value-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .value-row span { color: var(--muted); }
+    .value-row b { color: var(--ink); }
+
+    .split-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: white;
+    }
+
+    .task input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--teal);
+    }
+
+    .task strong { display: block; font-size: 13px; }
+    .task p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+
+    .priority {
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: white;
+      background: var(--blue);
+      white-space: nowrap;
+    }
+
+    .priority.hot { background: var(--red); }
+    .priority.mid { background: var(--gold); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 650;
+      background: #f7faf7;
+    }
+
+    tr:hover td { background: #fbfdfb; }
+
+    .progress {
+      height: 8px;
+      width: 100%;
+      min-width: 90px;
+      border-radius: 99px;
+      background: #e7ece8;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .marketing-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .matrix-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfdff;
+    }
+
+    .matrix-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .matrix-score {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .ops-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .portal-hero {
+      min-height: 210px;
+      border-radius: 8px;
+      padding: 22px;
+      color: var(--ice);
+      background:
+        linear-gradient(110deg, rgba(16,26,39,.92), rgba(32,51,72,.78)),
+        url("arkgrid-brand.png") center / cover;
+      display: grid;
+      align-content: end;
+      box-shadow: var(--shadow);
+    }
+
+    .portal-hero h2 {
+      margin: 0;
+      max-width: 620px;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .portal-hero p {
+      max-width: 700px;
+      color: #c7e6ee;
+    }
+
+    .journey-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .journey-item {
+      position: relative;
+      min-height: 128px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: white;
+    }
+
+    .journey-item::before {
+      content: attr(data-step);
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #071821;
+      background: var(--teal);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .journey-item strong {
+      display: block;
+      padding-right: 34px;
+      line-height: 1.25;
+    }
+
+    .journey-item p {
+      min-height: 38px;
+      margin: 8px 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .avatar-card {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #071821;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--teal), #e9fbff);
+      box-shadow: 0 0 18px rgba(24,207,227,.25);
+    }
+
+    .ops-lane {
+      min-width: 180px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: var(--soft);
+    }
+
+    .ops-lane h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .ops-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: white;
+    }
+
+    .ops-card strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .energy-chart {
+      width: 100%;
+      min-height: 280px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fbfdff, #f1f7fb);
+      overflow: hidden;
+    }
+
+    .energy-chart svg {
+      width: 100%;
+      height: 280px;
+      display: block;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      background: var(--teal);
+    }
+
+    .dot.load { background: var(--blue); }
+    .dot.export { background: var(--gold); }
+
+    .card {
+      padding: 16px;
+      box-shadow: none;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .field {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfdfb;
+    }
+
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .field strong {
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .map {
+      min-height: 260px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 38% 18%, rgba(24,207,227,.32) 0 6px, transparent 7px),
+        radial-gradient(circle at 52% 41%, rgba(143,183,213,.32) 0 7px, transparent 8px),
+        radial-gradient(circle at 45% 70%, rgba(36,79,120,.28) 0 8px, transparent 9px),
+        linear-gradient(145deg, #dceaf1, #f8fbfd);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map::before {
+      content: "";
+      position: absolute;
+      inset: 28px 46px;
+      border: 2px solid rgba(24,207,227,.22);
+      border-radius: 48% 42% 55% 35%;
+      transform: rotate(-14deg);
+      background: rgba(255,255,255,.38);
+    }
+
+    .map-label {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: end;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .map-label strong {
+      color: var(--ink);
+      font-size: 20px;
+      display: block;
+    }
+
+    .drawer {
+      position: fixed;
+      right: 22px;
+      top: 22px;
+      bottom: 22px;
+      width: min(460px, calc(100vw - 44px));
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 28px 80px rgba(24,32,31,.22);
+      transform: translateX(calc(100% + 30px));
+      transition: transform .22s ease;
+      z-index: 20;
+      overflow: auto;
+    }
+
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-head {
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px;
+      background: white;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .drawer-body { padding: 18px; }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: white;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .empty {
+      display: none;
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 76px minmax(0, 1fr); }
+      .brand div, .nav span, .side-card, .quota-card { display: none; }
+      .brand { justify-content: center; padding-left: 0; padding-right: 0; }
+      .nav button { justify-content: center; padding: 0; }
+      .workspace { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .marketing-grid { grid-template-columns: 1fr; }
+      .check-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .journey-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .view-switcher { grid-template-columns: 1fr; }
+      .view-shortcut span:last-child { display: none; }
+      .board, .ops-board {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(220px, 72vw);
+        grid-template-columns: none;
+        scroll-snap-type: x proximity;
+      }
+      .lane, .ops-lane { scroll-snap-align: start; }
+    }
+
+    @media (max-width: 720px) {
+      .app { display: block; min-height: 100vh; }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        z-index: 30;
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        overflow-x: auto;
+        border-top: 1px solid rgba(255,255,255,.12);
+        box-shadow: 0 -18px 46px rgba(16,26,39,.24);
+      }
+      .brand, .side-card, .quota-card { display: none; }
+      .nav {
+        display: flex;
+        gap: 6px;
+        flex: 1 0 auto;
+      }
+      .nav button {
+        width: 48px;
+        min-height: 48px;
+        flex: 0 0 auto;
+        justify-content: center;
+        padding: 0;
+        border-radius: 8px;
+      }
+      .nav button.active, .nav button:hover {
+        box-shadow: inset 0 3px 0 var(--teal);
+      }
+      .view-switcher {
+        display: flex;
+        grid-template-columns: none;
+        flex: 0 0 auto;
+      }
+      .view-shortcut {
+        width: 48px;
+        min-height: 48px;
+        padding: 5px;
+      }
+      .view-shortcut .shortcut-icon {
+        width: 28px;
+        height: 28px;
+      }
+      main {
+        padding: 14px 14px calc(92px + env(safe-area-inset-bottom));
+      }
+      .topbar { grid-template-columns: 1fr; }
+      h1 { font-size: 20px; }
+      .subtitle { font-size: 13px; }
+      .actions {
+        justify-content: stretch;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .search { min-width: 100%; }
+      .search, .lang-toggle { grid-column: 1 / -1; }
+      .btn {
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+        padding: 0 10px;
+      }
+      .metrics { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr; }
+      .matrix { grid-template-columns: 1fr; }
+      .check-grid { grid-template-columns: 1fr; }
+      .journey-grid { grid-template-columns: 1fr; }
+      .field-grid { grid-template-columns: 1fr; }
+      .panel {
+        padding: 12px;
+        overflow: hidden;
+      }
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .filters {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 2px;
+      }
+      .metric {
+        min-height: 96px;
+        padding: 14px;
+      }
+      .metric strong { font-size: 24px; }
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      th, td { padding: 10px 8px; }
+      .board, .ops-board {
+        grid-auto-columns: minmax(236px, 86vw);
+        margin-left: -2px;
+        padding: 0 2px 6px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .task {
+        grid-template-columns: 22px minmax(0, 1fr);
+      }
+      .task .priority {
+        grid-column: 2;
+        width: max-content;
+      }
+      .value-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .matrix-score {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .portal-hero {
+        min-height: 176px;
+        padding: 16px;
+        background-position: center;
+      }
+      .portal-hero h2 { font-size: 20px; }
+      .journey-item {
+        min-height: auto;
+        padding: 13px;
+      }
+      .avatar-card {
+        grid-template-columns: 48px minmax(0, 1fr);
+      }
+      .avatar {
+        width: 48px;
+        height: 48px;
+      }
+      .energy-chart,
+      .energy-chart svg {
+        min-height: 220px;
+        height: 220px;
+      }
+      .map { min-height: 180px; }
+      .map-label {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .drawer {
+        inset: 10px 10px calc(86px + env(safe-area-inset-bottom));
+        width: auto;
+        border-radius: 8px;
+      }
+      .drawer-head { padding: 14px; }
+      .drawer-body { padding: 14px; }
+      .launch-logo {
+        width: 76px;
+        height: 76px;
+      }
+      .launch-card h2 { font-size: 26px; }
+      .launch-card p {
+        max-width: 280px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .agent-animation {
+        transform: scale(.86);
+        margin-top: 0;
+      }
+    }
+
+    @media (max-width: 420px) {
+      main { padding-left: 10px; padding-right: 10px; }
+      .actions { grid-template-columns: 1fr; }
+      .btn.secondary, .btn { min-height: 42px; }
+      .lang-toggle { width: 100%; }
+      .lang-toggle button { flex: 1; }
+      .nav button,
+      .view-shortcut { width: 44px; min-height: 44px; }
+      .board, .ops-board { grid-auto-columns: minmax(226px, 88vw); }
+    }
+  </style>
+</head>
+<body>
+  <div class="launch-overlay" id="launchOverlay" aria-hidden="false">
+    <div class="launch-card">
+      <img class="launch-logo" src="arkgrid-symbol.png" alt="ArkGrid logo">
+      <h2>ArkGrid</h2>
+      <p>orchestrating power, empowering homes.</p>
+      <div class="agent-animation" aria-hidden="true">
+        <span class="agent-ring"></span>
+        <span class="agent-core"></span>
+        <span class="agent-node one"></span>
+        <span class="agent-node two"></span>
+        <span class="agent-node three"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航" data-aria-i18n="navAria">
+      <div class="brand">
+        <img class="mark" src="arkgrid-symbol.png" alt="ArkGrid logo">
+        <div>
+          <strong>ArkGrid CRM</strong>
+          <span>orchestrating power</span>
+          <div class="mode-badges">
+            <button class="mode-badge active" type="button" data-mode="ai" title="AI autonomous agent operation">AI</button>
+            <button class="mode-badge manual" type="button" data-mode="manual" title="Manual operation">MAN</button>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="active" data-view="dashboard" title="仪表盘" data-title-i18n="navDashboard"><span class="ico">⌂</span><span data-i18n="navDashboard">仪表盘</span></button>
+        <button data-view="pipeline" title="销售管道" data-title-i18n="navPipeline"><span class="ico">▦</span><span data-i18n="navPipeline">销售管道</span></button>
+        <button data-view="marketing" title="营销中心" data-title-i18n="navMarketing"><span class="ico">◈</span><span data-i18n="navMarketing">营销中心</span></button>
+        <button data-view="projects" title="交付中心" data-title-i18n="navProjects"><span class="ico">⚙</span><span data-i18n="navProjects">交付中心</span></button>
+        <button data-view="energy" title="综合能源管理" data-title-i18n="navEnergy"><span class="ico">∿</span><span data-i18n="navEnergy">综合能源管理</span></button>
+        <button data-view="compliance" title="合规中心" data-title-i18n="navCompliance"><span class="ico">✓</span><span data-i18n="navCompliance">合规中心</span></button>
+        <button data-view="customers" title="客户档案" data-title-i18n="navCustomers"><span class="ico">◎</span><span data-i18n="navCustomers">客户档案</span></button>
+        <button data-view="accounts" title="账号权限" data-title-i18n="navAccounts"><span class="ico">◐</span><span data-i18n="navAccounts">账号权限</span></button>
+      </nav>
+
+      <div class="side-card">
+        <strong data-i18n="todayFocus">今日重点</strong>
+        <p data-i18n="todayFocusBody">4 个 BUS voucher 接近 120 天窗口，2 个 DNO G99 审批待跟进，1 个 ECO4 证据包缺失。</p>
+      </div>
+
+      <div class="quota-card">
+        <strong data-i18n="quotaTitle">专业版余量</strong>
+        <div class="quota-bar" aria-label="18% token remaining"><span></span></div>
+        <p data-i18n="quotaBody">本月 Token 余量 18%。预计 4 天后不足，建议升级高级版按流量扩展。</p>
+      </div>
+
+      <div class="view-switcher" aria-label="视图切换" data-aria-i18n="viewSwitchAria">
+        <button class="view-shortcut" type="button" data-view-shortcut="userPortal" title="用户视图" data-title-i18n="userView">
+          <span class="shortcut-icon">U</span>
+          <span data-i18n="userView">用户视图</span>
+        </button>
+        <button class="view-shortcut" type="button" data-view-shortcut="dashboard" title="管理员视图" data-title-i18n="adminView">
+          <span class="shortcut-icon">A</span>
+          <span data-i18n="adminView">管理员视图</span>
+        </button>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <h1>ArkGrid-Native AI based Creative Workflow</h1>
+          <p class="subtitle" data-i18n="heroSubtitle">Orchestrating power, empowering homes. 管理太阳能、储能、热泵、保温改造从线索到售后的全流程。</p>
+        </div>
+        <div class="actions">
+          <label class="search">
+            <span class="ico">⌕</span>
+            <input id="search" type="search" placeholder="搜索客户、邮编、方案、补贴编号" data-placeholder-i18n="searchPlaceholder">
+          </label>
+          <div class="lang-toggle" aria-label="Language">
+            <button class="active" data-lang="zh" type="button">中</button>
+            <button data-lang="en" type="button">EN</button>
+          </div>
+          <button class="btn secondary" id="versionBtn"><span class="ico">⇄</span><span data-i18n="versionSwitch">版本切换</span></button>
+          <button class="btn secondary" id="installAppBtn"><span class="ico">⇲</span><span data-i18n="installApp">安装App</span></button>
+          <button class="btn secondary" id="exportBtn"><span class="ico">⇩</span><span data-i18n="export">导出</span></button>
+          <button class="btn" id="newLeadBtn"><span class="ico">＋</span><span data-i18n="newLead">新增线索</span></button>
+        </div>
+      </header>
+
+      <section class="view active" id="dashboard">
+        <div class="metrics">
+          <div class="metric"><label data-i18n="metricLeads">本月新增线索</label><strong>128</strong><div class="delta" data-i18n="metricLeadsDelta">较上月 +18%</div></div>
+          <div class="metric"><label data-i18n="metricQuotes">报价总额</label><strong>£1.42m</strong><div class="delta" data-i18n="metricQuotesDelta">热泵占比 46%</div></div>
+          <div class="metric"><label data-i18n="metricSchedule">安装排期</label><strong>37</strong><div class="delta" data-i18n="metricScheduleDelta">未来 14 天</div></div>
+          <div class="metric"><label data-i18n="metricRisk">合规风险</label><strong>9</strong><div class="delta" data-i18n="metricRiskDelta">需本周处理</div></div>
+        </div>
+
+        <div class="workspace">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="activePipeline">活跃销售管道</h2>
+              <div class="filters" id="dashboardFilters">
+                <button class="chip active" data-filter="all" data-i18n="filterAll">全部</button>
+                <button class="chip" data-filter="heat" data-i18n="filterHeat">热泵</button>
+                <button class="chip" data-filter="solar" data-i18n="filterSolar">光伏/储能</button>
+                <button class="chip" data-filter="eco">ECO4</button>
+              </div>
+            </div>
+            <div class="board" id="leadBoard"></div>
+            <div class="empty" id="emptyState" data-i18n="emptyLeads">没有匹配的线索。</div>
+          </section>
+
+          <aside class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="tasks">行动清单</h2>
+              <button class="chip" id="toggleTasks" data-i18n="hotOnly">只看高优先级</button>
+            </div>
+            <div class="split-list" id="taskList"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="userPortal">
+        <section class="portal-hero">
+          <h2 data-i18n="userPortalTitle">Asha Patel 的 ArkGrid 安装旅程</h2>
+          <p class="subtitle" data-i18n="userPortalBody">从线上咨询到综合能源订阅，客户可查看每个阶段的负责人、进度、视频授权、施工证据、SEG 与售后服务。</p>
+        </section>
+
+        <div class="metrics" style="margin-top:16px;">
+          <div class="metric"><label data-i18n="portalOrderStatus">订单状态</label><strong data-i18n="portalOrderStatusValue">DNO 审批中</strong><div class="delta">AG-260621-018</div></div>
+          <div class="metric"><label data-i18n="portalDedicatedContact">联系专人</label><strong>Ella Morris</strong><div class="delta">+44 20 7946 0821</div></div>
+          <div class="metric"><label data-i18n="portalInstallTeam">安装队预约</label><strong>2026-06-21</strong><div class="delta" data-i18n="portalInstallTeamDelta">Solar Crew London · 5★</div></div>
+          <div class="metric"><label data-i18n="portalEnergyPlan">综合能源订阅</label><strong data-i18n="portalEnergyPlanValue">待确认</strong><div class="delta" data-i18n="portalEnergyPlanDelta">SEG + 远程运维</div></div>
+        </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="customerJourney">用户安装全流程</h2>
+            <button class="chip active" data-i18n="customerVisible">客户可见</button>
+          </div>
+          <div class="journey-grid" id="customerJourneyGrid"></div>
+        </section>
+
+        <div class="marketing-grid" style="margin-top:16px;">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="crewAndEvidence">安装队案例与资质</h2>
+              <button class="chip">Solar Crew London</button>
+            </div>
+            <div class="cards" id="customerCaseCards"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="customerIdentityConsent">头像 ID 与授权记录</h2>
+              <button class="chip active" data-i18n="videoConsent">视频授权</button>
+            </div>
+            <div class="card avatar-card">
+              <div class="avatar">AP</div>
+              <div>
+                <h3>Asha Patel · ID AG-CUS-018</h3>
+                <p class="subtitle" data-i18n="avatarConsentBody">客户已授权视频记录施工进度，允许 ArkGrid 用于质保、MCS 证据与售后诊断。</p>
+              </div>
+            </div>
+            <div class="field-grid" id="customerCredentialFields"></div>
+          </section>
+        </div>
+
+        <div class="marketing-grid" style="margin-top:16px;">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="serviceAndAftercare">售后服务与远程运维</h2>
+              <button class="chip" data-i18n="serviceSla">SLA 24h</button>
+            </div>
+            <div class="cards" id="customerServiceCards"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="documentsAndComplaint">文件下载与人工投诉</h2>
+              <button class="chip" data-i18n="manualComplaint">人工投诉</button>
+            </div>
+            <div class="split-list" id="customerActionList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="versions">
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="versionDetails">版本详情</h2>
+            <button class="chip active" data-i18n="currentPlan">当前：专业版</button>
+          </div>
+          <div class="cards">
+            <article class="card">
+              <h3 data-i18n="starterPlan">入门版</h3>
+              <div class="field-grid">
+                <div class="field"><label data-i18n="price">价格</label><strong data-i18n="freePrice">免费</strong></div>
+                <div class="field"><label data-i18n="bestFor">适合</label><strong data-i18n="starterFor">体验基础 CRM</strong></div>
+              </div>
+              <p class="subtitle" data-i18n="starterDesc">开放基础客户、订单、看板浏览能力，用于试用和演示。</p>
+            </article>
+
+            <article class="card">
+              <h3 data-i18n="basicPlan">基础版</h3>
+              <div class="field-grid">
+                <div class="field"><label data-i18n="price">价格</label><strong>£29.99 / month</strong></div>
+                <div class="field"><label data-i18n="access">开放</label><strong>Workflow</strong></div>
+              </div>
+              <p class="subtitle" data-i18n="basicDesc">只开放工作流编排和人工运营视图，自动化环节不开放。</p>
+            </article>
+
+            <article class="card">
+              <h3 data-i18n="proPlan">专业版</h3>
+              <div class="field-grid">
+                <div class="field"><label data-i18n="price">价格</label><strong>£99.99 / month</strong></div>
+                <div class="field"><label data-i18n="limit">限制</label><strong data-i18n="tokenLimit">Token 流量限制</strong></div>
+              </div>
+              <p class="subtitle" data-i18n="proDesc">开放智能体标准模块，适合标准 CRM 自动化、售前交付协同和常规能源运营。</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="advancedPlan">高级版</h2>
+            <button class="chip active" data-i18n="recommendedUpgrade">推荐升级</button>
+          </div>
+          <div class="workspace">
+            <div>
+              <div class="metrics">
+                <div class="metric"><label data-i18n="baseSubscription">基础订阅</label><strong>£199.99</strong><div class="delta" data-i18n="monthly">每月</div></div>
+                <div class="metric"><label data-i18n="trafficBilling">流量计费</label><strong data-i18n="payAsYouGo">按量</strong><div class="delta" data-i18n="scaleFreely">可弹性扩展</div></div>
+                <div class="metric"><label data-i18n="customService">专业定制</label><strong data-i18n="included">包含</strong><div class="delta" data-i18n="expertSetup">专家配置</div></div>
+                <div class="metric"><label data-i18n="automationAccess">自动化</label><strong data-i18n="fullAccess">全开放</strong><div class="delta">AI + Workflow</div></div>
+              </div>
+              <div class="check-grid">
+                <article class="matrix-item"><strong data-i18n="marketingModel">营销大模型</strong><p class="subtitle" data-i18n="marketingModelDesc">渠道矩阵、素材策略、线索评分和转化动作优化。</p></article>
+                <article class="matrix-item"><strong data-i18n="engineeringModel">工程大模型</strong><p class="subtitle" data-i18n="engineeringModelDesc">踏勘、DNO、施工、质量和现场异常智能协同。</p></article>
+                <article class="matrix-item"><strong data-i18n="materialModel">材料大模型</strong><p class="subtitle" data-i18n="materialModelDesc">Survey 报告到材料清单、库存、损耗和余料回收自动关联。</p></article>
+                <article class="matrix-item"><strong data-i18n="dispatchModel">配送大模型</strong><p class="subtitle" data-i18n="dispatchModelDesc">派单、车辆 GPS、ETA、仓储和现场交付联动优化。</p></article>
+                <article class="matrix-item"><strong data-i18n="agentWorkflow">智能体工作流</strong><p class="subtitle" data-i18n="agentWorkflowDesc">多智能体自主运营，支持人工接管和审批节点。</p></article>
+                <article class="matrix-item"><strong data-i18n="customBuild">专业定制</strong><p class="subtitle" data-i18n="customBuildDesc">按企业 SOP、表单、ERP、能源交易伙伴和数据接口定制。</p></article>
+              </div>
+            </div>
+            <aside class="panel" style="box-shadow:none;">
+              <div class="panel-head"><h2 data-i18n="quotaReminder">余量与升级提醒</h2></div>
+              <div class="quota-bar" style="background:#e7eef3;"><span></span></div>
+              <p class="subtitle" data-i18n="quotaDetail">专业版剩余 18% Token。高级版改为基础订阅 + 流量计费，适合营销、工程、材料、配送专家模型同时运行。</p>
+              <button class="btn" style="margin-top:14px;"><span class="ico">↑</span><span data-i18n="upgradeAdvanced">升级高级版</span></button>
+            </aside>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="pipeline">
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="salesOpps">销售机会</h2>
+            <div class="filters">
+              <button class="chip active" data-i18n="byStage">按阶段</button>
+              <button class="chip" data-i18n="byInstallType">按安装类型</button>
+              <button class="chip" data-i18n="byRegion">按区域</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th data-i18n="thCustomer">客户</th><th data-i18n="thTech">技术</th><th data-i18n="thStage">阶段</th><th data-i18n="thGrant">补贴</th><th data-i18n="thValue">金额</th><th data-i18n="thNext">下一步</th></tr></thead>
+            <tbody id="pipelineRows"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <section class="view" id="projects">
+        <div class="workspace">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="installProjects">交付中心</h2>
+              <button class="chip" data-i18n="engineerView">工程师视图</button>
+            </div>
+            <table>
+              <thead><tr><th data-i18n="thProject">项目</th><th data-i18n="thRegion">区域</th><th data-i18n="thStatus">状态</th><th>DNO/MCS</th><th data-i18n="thProgress">进度</th><th data-i18n="thInstallDate">安装日</th></tr></thead>
+              <tbody id="projectRows"></tbody>
+            </table>
+          </section>
+          <aside class="panel">
+            <div class="panel-head"><h2 data-i18n="regionalCapacity">区域容量</h2></div>
+            <div class="map">
+              <div class="map-label">
+                <div><strong>37</strong><span data-i18n="futureInstalls">未来 14 天安装</span></div>
+                <div>London · Midlands · North West</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="metrics" style="margin-top:16px;">
+          <div class="metric"><label data-i18n="surveyMetricBooked">已预约踏勘</label><strong>18</strong><div class="delta" data-i18n="surveyMetricBookedDelta">24 小时内二次确认</div></div>
+          <div class="metric"><label data-i18n="surveyMetricReports">踏勘报告待交付</label><strong>7</strong><div class="delta" data-i18n="surveyMetricReportsDelta">SLA 7 日内</div></div>
+          <div class="metric"><label data-i18n="dnoMetricOpen">DNO 进行中</label><strong>14</strong><div class="delta" data-i18n="dnoMetricOpenDelta">每日跟踪</div></div>
+          <div class="metric"><label data-i18n="dnoMetricExceptions">补料/驳回</label><strong>3</strong><div class="delta" data-i18n="dnoMetricExceptionsDelta">24 小时响应</div></div>
+        </div>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="siteSurveyBoard">现场踏勘看板</h2>
+            <div class="filters">
+              <button class="chip active" data-i18n="surveySla">报告 ≤7 天</button>
+              <button class="chip" data-i18n="surveyChecklist">Checklist</button>
+            </div>
+          </div>
+          <div class="ops-board" id="surveyBoard"></div>
+        </section>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="dnoApplicationBoard">DNO 申请看板</h2>
+            <div class="filters">
+              <button class="chip active">G98</button>
+              <button class="chip">G99</button>
+            </div>
+          </div>
+          <div class="ops-board" id="dnoBoard"></div>
+        </section>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="surveyChecklistSummary">踏勘检查项摘要</h2>
+            <button class="chip" data-i18n="fromManuals">来自管理手册与 PV Survey Check List</button>
+          </div>
+          <div class="check-grid" id="surveyChecklistGrid"></div>
+        </section>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="constructionSiteBoard">施工现场看板</h2>
+            <div class="filters">
+              <button class="chip active" data-i18n="roofCrew">屋顶</button>
+              <button class="chip" data-i18n="scaffoldCrew">脚手架</button>
+              <button class="chip" data-i18n="electricalCrew">电气</button>
+            </div>
+          </div>
+          <div class="ops-board" id="constructionBoard"></div>
+        </section>
+
+        <div class="marketing-grid" style="margin-top:16px;">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="dispatchSubsystem">派单子系统</h2>
+              <button class="chip active" data-i18n="smartDispatch">智能派单</button>
+            </div>
+            <table>
+              <thead><tr><th data-i18n="dispatchOrder">订单</th><th data-i18n="dispatchTeam">团队</th><th data-i18n="dispatchScore">匹配分</th><th data-i18n="dispatchStatus">状态</th></tr></thead>
+              <tbody id="dispatchRows"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="gpsBoard">物流车辆 GPS 看板</h2>
+              <button class="chip" data-i18n="materialEta">材料 ETA</button>
+            </div>
+            <div class="matrix" id="gpsCards"></div>
+          </section>
+        </div>
+
+        <div class="marketing-grid" style="margin-top:16px;">
+          <section class="panel">
+            <div class="panel-head"><h2 data-i18n="mainMaterials">主材清单</h2></div>
+            <table>
+              <thead><tr><th data-i18n="materialItem">材料</th><th data-i18n="materialQty">数量</th><th data-i18n="materialRule">计算/来源</th></tr></thead>
+              <tbody id="mainMaterialRows"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><h2 data-i18n="auxMaterials">辅材清单</h2></div>
+            <table>
+              <thead><tr><th data-i18n="materialItem">材料</th><th data-i18n="materialQty">数量</th><th data-i18n="materialRule">计算/来源</th></tr></thead>
+              <tbody id="auxMaterialRows"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="materialAutoLink">材料清单自动关联</h2>
+            <button class="chip" data-i18n="fromExcel">来自 Material list calculation.xlsx</button>
+          </div>
+          <div class="check-grid" id="materialFormulaGrid"></div>
+        </section>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="siteMediaBoard">现场视频照片看板</h2>
+            <button class="chip" data-i18n="mcsArchive">MCS 审计归档</button>
+          </div>
+          <div class="cards" id="siteMediaCards"></div>
+        </section>
+      </section>
+
+      <section class="view" id="customers">
+        <div class="cards" id="customerCards"></div>
+      </section>
+
+      <section class="view" id="accounts">
+        <div class="metrics">
+          <div class="metric"><label data-i18n="accountProjects">大项目</label><strong>6</strong><div class="delta" data-i18n="accountProjectsDelta">每项目 1 管理员 + AI + 人工</div></div>
+          <div class="metric"><label data-i18n="aiAccounts">AI 账号</label><strong>18</strong><div class="delta" data-i18n="aiAccountsDelta">可接管标准模块</div></div>
+          <div class="metric"><label data-i18n="humanAccounts">人工账号</label><strong>9</strong><div class="delta" data-i18n="humanAccountsDelta">审批与人工接管</div></div>
+          <div class="metric"><label data-i18n="permissionGroups">权限组</label><strong>7</strong><div class="delta" data-i18n="permissionGroupsDelta">按模块隔离</div></div>
+        </div>
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="accountPermissionSystem">账号系统与权限配置</h2>
+            <button class="chip active" data-i18n="rbac">RBAC</button>
+          </div>
+          <table>
+            <thead><tr><th data-i18n="thProject">项目</th><th data-i18n="projectAdmin">管理人员</th><th>AI</th><th>MAN</th><th data-i18n="permissionScope">权限范围</th></tr></thead>
+            <tbody id="accountRows"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <section class="view" id="marketing">
+        <section class="panel" style="margin-bottom:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="marketingRoleConfig">营销中心项目角色配置</h2>
+            <button class="chip active" data-i18n="aiMarked">AI 负责项已高亮</button>
+          </div>
+          <div class="cards" id="marketingRoleCards"></div>
+        </section>
+
+        <div class="metrics">
+          <div class="metric"><label data-i18n="mkMetricSpend">本月营销预算</label><strong>£38.4k</strong><div class="delta" data-i18n="mkMetricSpendDelta">CPL £147</div></div>
+          <div class="metric"><label data-i18n="mkMetricLeads">营销形成 Leads</label><strong>261</strong><div class="delta" data-i18n="mkMetricLeadsDelta">线上渠道 72%</div></div>
+          <div class="metric"><label data-i18n="mkMetricActivated">电销激活</label><strong>96</strong><div class="delta" data-i18n="mkMetricActivatedDelta">激活率 36.8%</div></div>
+          <div class="metric"><label data-i18n="mkMetricVisits">上门谈判</label><strong>31</strong><div class="delta" data-i18n="mkMetricVisitsDelta">方案转化 68%</div></div>
+        </div>
+
+        <div class="marketing-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="channelMatrix">渠道矩阵展示</h2>
+              <button class="chip active" data-i18n="onlineMarketing">线上营销</button>
+            </div>
+            <div class="matrix" id="channelMatrix"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="marketingDashboard">数据看板</h2>
+              <div class="filters">
+                <button class="chip active" data-i18n="thisMonth">本月</button>
+                <button class="chip" data-i18n="lastMonth">上月</button>
+              </div>
+            </div>
+            <table>
+              <thead><tr><th data-i18n="mkMetric">指标</th><th data-i18n="mkTarget">目标</th><th data-i18n="mkActual">实际</th><th data-i18n="mkConversion">转化</th></tr></thead>
+              <tbody id="marketingDashboardRows"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="onlineTactics">线上营销方式</h2>
+            <div class="filters">
+              <button class="chip active" data-i18n="contentOps">内容运营</button>
+              <button class="chip" data-i18n="searchOps">搜索获客</button>
+              <button class="chip" data-i18n="salesOps">转化动作</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th data-i18n="mkChannel">渠道/动作</th><th data-i18n="mkType">类型</th><th data-i18n="mkCount">数量</th><th data-i18n="mkOwner">负责人</th><th data-i18n="mkImpact">产出</th></tr></thead>
+            <tbody id="marketingRows"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <section class="view" id="energy">
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="energyCentre">综合能源管理中心</h2>
+            <div class="filters" id="energyAddressSwitch"></div>
+          </div>
+          <p class="subtitle" data-i18n="energyCentreBody">按地址切换订单，统一查看光伏、储能、SEG、VPP、HEMS 和家庭负载优化。</p>
+        </div>
+
+        <div class="metrics" id="energyMetrics"></div>
+
+        <div class="marketing-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="energyCurve">用电 / 发电 / 卖电曲线</h2>
+              <button class="chip active" data-i18n="todayCurve">今日</button>
+            </div>
+            <div class="energy-chart" id="energyChart"></div>
+            <div class="legend">
+              <span><i class="dot load"></i><span data-i18n="homeLoad">用电</span></span>
+              <span><i class="dot"></i><span data-i18n="pvGeneration">发电</span></span>
+              <span><i class="dot export"></i><span data-i18n="exportPower">卖电</span></span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="orderEnergyDashboard">每个订单的数据看板</h2>
+              <button class="chip" data-i18n="liveTelemetry">实时数据</button>
+            </div>
+            <div class="field-grid" id="orderEnergyFields"></div>
+          </section>
+        </div>
+
+        <div class="marketing-grid" style="margin-top:16px;">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="segProgress">SEG 申请进展</h2>
+              <button class="chip" data-i18n="segSla">审核 1-4 周</button>
+            </div>
+            <div class="ops-board" id="segBoard"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 data-i18n="tradingStrategy">卖电与用电优化策略</h2>
+              <button class="chip" data-i18n="vppMode">VPP / HEMS</button>
+            </div>
+            <div class="split-list" id="strategyList"></div>
+          </section>
+        </div>
+
+        <section class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2 data-i18n="smartHomeControl">智能家居控制板块</h2>
+            <button class="chip" data-i18n="remoteControl">远程控制</button>
+          </div>
+          <div class="cards" id="smartHomeCards"></div>
+        </section>
+      </section>
+
+      <section class="view" id="compliance">
+        <div class="cards">
+          <article class="card">
+            <h3 data-i18n="busRules">BUS 补贴规则</h3>
+            <p class="subtitle" data-i18n="busRulesBody">热泵/生物质锅炉项目跟踪 voucher、客户确认、安装完成及赎回状态。</p>
+            <div class="field-grid">
+              <div class="field"><label>Air-to-water HP</label><strong>£7,500</strong></div>
+              <div class="field"><label>Air-to-air HP</label><strong>£2,500</strong></div>
+              <div class="field"><label>Ground source HP</label><strong>£7,500</strong></div>
+              <div class="field"><label>Biomass boiler</label><strong>£5,000</strong></div>
+            </div>
+          </article>
+          <article class="card">
+            <h3>MCS / Consumer Code</h3>
+            <p class="subtitle" data-i18n="mcsBody">记录安装资质、产品目录、证书发放、RECC/HIES 消费者保护要求。</p>
+            <div class="field-grid">
+              <div class="field"><label data-i18n="mcsCert">MCS 证书</label><strong data-i18n="mcsCertValue">安装后 10 天内目标</strong></div>
+              <div class="field"><label data-i18n="consumerCode">消费者代码</label><strong>RECC / HIES</strong></div>
+              <div class="field"><label data-i18n="productCheck">产品校验</label><strong>Ofgem PEL</strong></div>
+              <div class="field"><label data-i18n="auditStatus">审计状态</label><strong data-i18n="auditStatusValue">证据包归档</strong></div>
+            </div>
+          </article>
+          <article class="card">
+            <h3>ECO4 / SEG / DNO</h3>
+            <p class="subtitle" data-i18n="ecoSegBody">集中管理资格证据、出口电价供应商、G98/G99 通知和审批节点。</p>
+            <div class="field-grid">
+              <div class="field"><label data-i18n="eco4Close">ECO4 关闭</label><strong>2026-12-31</strong></div>
+              <div class="field"><label data-i18n="segYear">SEG 年度</label><strong data-i18n="segYearValue">2026-04-01 至 2027-03-31</strong></div>
+              <div class="field"><label>G98</label><strong data-i18n="g98Value">安装后通知</strong></div>
+              <div class="field"><label>G99</label><strong data-i18n="g99Value">安装前审批</strong></div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="drawerTitle" data-i18n="customerDetail">客户详情</h2>
+        <p class="subtitle" id="drawerSubtitle" data-i18n="drawerSubtitleDefault">安装机会与合规状态</p>
+      </div>
+      <button class="icon-btn" id="closeDrawer" title="关闭" data-title-i18n="close">×</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+
+  <div class="mode-overlay" id="modeOverlay" aria-hidden="true">
+    <div class="mode-modal">
+      <div id="modeLoader" class="bot-loader"></div>
+      <h2 id="modeTitle">AI Agent Takeover</h2>
+      <p id="modeText">Autonomous operating agents are starting.</p>
+    </div>
+  </div>
+
+  <script>
+    const i18n = {
+      zh: {
+        navAria: "主导航",
+        navDashboard: "仪表盘",
+        navPipeline: "销售管道",
+        navProjects: "交付中心",
+        navCustomers: "客户档案",
+        navMarketing: "营销中心",
+        navAccounts: "账号权限",
+        navEnergy: "综合能源管理",
+        navCompliance: "合规中心",
+        viewSwitchAria: "视图切换",
+        userView: "用户视图",
+        adminView: "管理员视图",
+        userPortalTitle: "Asha Patel 的 ArkGrid 安装旅程",
+        userPortalBody: "从线上咨询到综合能源订阅，客户可查看每个阶段的负责人、进度、视频授权、施工证据、SEG 与售后服务。",
+        portalOrderStatus: "订单状态",
+        portalOrderStatusValue: "DNO 审批中",
+        portalDedicatedContact: "联系专人",
+        portalInstallTeam: "安装队预约",
+        portalInstallTeamDelta: "Solar Crew London · 5★",
+        portalEnergyPlan: "综合能源订阅",
+        portalEnergyPlanValue: "待确认",
+        portalEnergyPlanDelta: "SEG + 远程运维",
+        customerJourney: "用户安装全流程",
+        customerVisible: "客户可见",
+        crewAndEvidence: "安装队案例与资质",
+        customerIdentityConsent: "头像 ID 与授权记录",
+        videoConsent: "视频授权",
+        avatarConsentBody: "客户已授权视频记录施工进度，允许 ArkGrid 用于质保、MCS 证据与售后诊断。",
+        serviceAndAftercare: "售后服务与远程运维",
+        serviceSla: "SLA 24h",
+        documentsAndComplaint: "文件下载与人工投诉",
+        manualComplaint: "人工投诉",
+        journeyOnlineConsult: "线上咨询",
+        journeyRemoteDesign: "远程踏勘设计",
+        journeyDoorProposal: "上门谈方案签约",
+        journeyOnsiteSurvey: "上门踏勘",
+        journeyDno: "DNO 申请",
+        journeyMaterialTransport: "材料运输",
+        journeyWorkerBooking: "工人预约情况",
+        journeyCrewCases: "安装队过往案例",
+        journeyCertificates: "资质证书展示",
+        journeyAvatarId: "头像 ID",
+        journeyVideoConsent: "授权同意视频记录",
+        journeyConstructionProgress: "施工进度",
+        journeySegProgress: "SEG 流程进度",
+        journeyAftercare: "售后服务",
+        journeyContact: "联系专人",
+        journeyEnergySub: "订阅综合能源管理",
+        journeyException: "异常报告",
+        journeyRemoteOps: "远程运维",
+        journeyRepair: "报修",
+        journeyWarranty: "质保书下载",
+        journeyComplaint: "人工投诉",
+        statusDone: "已完成",
+        statusActive: "进行中",
+        statusUpcoming: "待开始",
+        statusAvailable: "可使用",
+        warrantyDownload: "质保书下载",
+        exceptionReport: "异常报告",
+        remoteOpsTicket: "远程运维工单",
+        repairBooking: "报修预约",
+        todayFocus: "今日重点",
+        todayFocusBody: "4 个 BUS voucher 接近 120 天窗口，2 个 DNO G99 审批待跟进，1 个 ECO4 证据包缺失。",
+        quotaTitle: "专业版余量",
+        quotaBody: "本月 Token 余量 18%。预计 4 天后不足，建议升级高级版按流量扩展。",
+        heroSubtitle: "Orchestrating power, empowering homes. 管理太阳能、储能、热泵、保温改造从线索到售后的全流程。",
+        searchPlaceholder: "搜索客户、邮编、方案、补贴编号",
+        versionSwitch: "版本切换",
+        installApp: "安装App",
+        installHint: "如未弹出安装窗口，请在手机浏览器分享菜单中选择“添加到主屏幕”。",
+        versionDetails: "版本详情",
+        currentPlan: "当前：专业版",
+        starterPlan: "入门版",
+        basicPlan: "基础版",
+        proPlan: "专业版",
+        advancedPlan: "高级版",
+        price: "价格",
+        freePrice: "免费",
+        bestFor: "适合",
+        starterFor: "体验基础 CRM",
+        starterDesc: "开放基础客户、订单、看板浏览能力，用于试用和演示。",
+        access: "开放",
+        basicDesc: "只开放工作流编排和人工运营视图，自动化环节不开放。",
+        limit: "限制",
+        tokenLimit: "Token 流量限制",
+        proDesc: "开放智能体标准模块，适合标准 CRM 自动化、售前交付协同和常规能源运营。",
+        recommendedUpgrade: "推荐升级",
+        baseSubscription: "基础订阅",
+        monthly: "每月",
+        trafficBilling: "流量计费",
+        payAsYouGo: "按量",
+        scaleFreely: "可弹性扩展",
+        customService: "专业定制",
+        included: "包含",
+        expertSetup: "专家配置",
+        automationAccess: "自动化",
+        fullAccess: "全开放",
+        marketingModel: "营销大模型",
+        marketingModelDesc: "渠道矩阵、素材策略、线索评分和转化动作优化。",
+        engineeringModel: "工程大模型",
+        engineeringModelDesc: "踏勘、DNO、施工、质量和现场异常智能协同。",
+        materialModel: "材料大模型",
+        materialModelDesc: "Survey 报告到材料清单、库存、损耗和余料回收自动关联。",
+        dispatchModel: "配送大模型",
+        dispatchModelDesc: "派单、车辆 GPS、ETA、仓储和现场交付联动优化。",
+        agentWorkflow: "智能体工作流",
+        agentWorkflowDesc: "多智能体自主运营，支持人工接管和审批节点。",
+        customBuild: "专业定制",
+        customBuildDesc: "按企业 SOP、表单、ERP、能源交易伙伴和数据接口定制。",
+        quotaReminder: "余量与升级提醒",
+        quotaDetail: "专业版剩余 18% Token。高级版改为基础订阅 + 流量计费，适合营销、工程、材料、配送专家模型同时运行。",
+        upgradeAdvanced: "升级高级版",
+        accountProjects: "大项目",
+        accountProjectsDelta: "每项目 1 管理员 + AI + 人工",
+        aiAccounts: "AI 账号",
+        aiAccountsDelta: "可接管标准模块",
+        humanAccounts: "人工账号",
+        humanAccountsDelta: "审批与人工接管",
+        permissionGroups: "权限组",
+        permissionGroupsDelta: "按模块隔离",
+        accountPermissionSystem: "账号系统与权限配置",
+        rbac: "角色权限",
+        projectAdmin: "管理人员",
+        permissionScope: "权限范围",
+        marketingRoleConfig: "营销中心项目角色配置",
+        aiMarked: "AI 负责项已高亮",
+        roleType: "角色类型",
+        rolePermission: "权限",
+        aiOwner: "AI 负责人",
+        humanOwner: "人工负责人",
+        hybridOwner: "AI + 人工",
+        marketingDirector: "营销总监",
+        contentSpecialist: "内容生成专员",
+        channelDevSpecialist: "渠道账号开发专员",
+        seoSpecialist: "搜索引擎优化专员",
+        dataAnalystSpecialist: "数据分析专员",
+        telesalesScriptSpecialist: "电销上门话术优化专员",
+        objectionSpecialist: "客户异议专员",
+        export: "导出",
+        newLead: "新增线索",
+        metricLeads: "本月新增线索",
+        metricLeadsDelta: "较上月 +18%",
+        metricQuotes: "报价总额",
+        metricQuotesDelta: "热泵占比 46%",
+        metricSchedule: "安装排期",
+        metricScheduleDelta: "未来 14 天",
+        metricRisk: "合规风险",
+        metricRiskDelta: "需本周处理",
+        activePipeline: "活跃销售管道",
+        filterAll: "全部",
+        filterHeat: "热泵",
+        filterSolar: "光伏/储能",
+        emptyLeads: "没有匹配的线索。",
+        tasks: "行动清单",
+        hotOnly: "只看高优先级",
+        salesOpps: "销售机会",
+        byStage: "按阶段",
+        byInstallType: "按安装类型",
+        byRegion: "按区域",
+        thCustomer: "客户",
+        thTech: "技术",
+        thStage: "阶段",
+        thGrant: "补贴",
+        thValue: "金额",
+        thNext: "下一步",
+        installProjects: "交付中心",
+        engineerView: "工程师视图",
+        thProject: "项目",
+        thRegion: "区域",
+        thStatus: "状态",
+        thProgress: "进度",
+        thInstallDate: "安装日",
+        regionalCapacity: "区域容量",
+        futureInstalls: "未来 14 天安装",
+        surveyMetricBooked: "已预约踏勘",
+        surveyMetricBookedDelta: "24 小时内二次确认",
+        surveyMetricReports: "踏勘报告待交付",
+        surveyMetricReportsDelta: "SLA 7 日内",
+        dnoMetricOpen: "DNO 进行中",
+        dnoMetricOpenDelta: "每日跟踪",
+        dnoMetricExceptions: "补料/驳回",
+        dnoMetricExceptionsDelta: "24 小时响应",
+        siteSurveyBoard: "现场踏勘看板",
+        surveySla: "报告 ≤7 天",
+        surveyChecklist: "Checklist",
+        dnoApplicationBoard: "DNO 申请看板",
+        surveyChecklistSummary: "踏勘检查项摘要",
+        fromManuals: "来自管理手册与 PV Survey Check List",
+        opsDue: "到期",
+        opsOwner: "负责人",
+        opsRisk: "风险",
+        opsSla: "SLA",
+        surveyAppointment: "预约确认",
+        surveyPreparation: "踏勘前准备",
+        surveyOnsite: "上门踏勘",
+        surveyReport: "报告/BOM/DNO资料",
+        dnoIntake: "资料初审",
+        dnoForm: "填报/审核",
+        dnoSubmitted: "已提交跟踪",
+        dnoResult: "补料/结果处理",
+        constructionSiteBoard: "施工现场看板",
+        roofCrew: "屋顶",
+        scaffoldCrew: "脚手架",
+        electricalCrew: "电气",
+        dispatchSubsystem: "派单子系统",
+        smartDispatch: "智能派单",
+        dispatchOrder: "订单",
+        dispatchTeam: "团队",
+        dispatchScore: "匹配分",
+        dispatchStatus: "状态",
+        gpsBoard: "物流车辆 GPS 看板",
+        materialEta: "材料 ETA",
+        mainMaterials: "主材清单",
+        auxMaterials: "辅材清单",
+        materialItem: "材料",
+        materialQty: "数量",
+        materialRule: "计算/来源",
+        materialAutoLink: "材料清单自动关联",
+        fromExcel: "来自 Material list calculation.xlsx",
+        siteMediaBoard: "现场视频照片看板",
+        mcsArchive: "MCS 审计归档",
+        siteTask: "任务",
+        siteEvidence: "影像证据",
+        gpsEta: "预计到达",
+        gpsLoad: "装载",
+        formulaSurveyInput: "Survey 报告输入",
+        formulaExcelRule: "Excel 公式关系",
+        formulaOrderOutput: "订单材料输出",
+        busRules: "BUS 补贴规则",
+        busRulesBody: "热泵/生物质锅炉项目跟踪 voucher、客户确认、安装完成及赎回状态。",
+        mcsBody: "记录安装资质、产品目录、证书发放、RECC/HIES 消费者保护要求。",
+        mcsCert: "MCS 证书",
+        mcsCertValue: "安装后 10 天内目标",
+        consumerCode: "消费者代码",
+        productCheck: "产品校验",
+        auditStatus: "审计状态",
+        auditStatusValue: "证据包归档",
+        ecoSegBody: "集中管理资格证据、出口电价供应商、G98/G99 通知和审批节点。",
+        eco4Close: "ECO4 关闭",
+        segYear: "SEG 年度",
+        segYearValue: "2026-04-01 至 2027-03-31",
+        g98Value: "安装后通知",
+        g99Value: "安装前审批",
+        customerDetail: "客户详情",
+        drawerSubtitleDefault: "安装机会与合规状态",
+        close: "关闭",
+        priorityHot: "高",
+        priorityMid: "中",
+        priorityNormal: "常规",
+        complete: "完成",
+        todo: "待办",
+        fieldProject: "项目",
+        fieldState: "状态",
+        fieldTag: "标签",
+        fieldOwner: "负责人",
+        opportunityValue: "机会金额",
+        grantRevenue: "补贴/收益",
+        currentStage: "当前阶段",
+        risk: "风险",
+        nextStep: "下一步",
+        drawerAdvice: "建议自动生成客户邮件、安装前证据清单、报价版本和负责人提醒。CRM 后端接入后可把这些字段映射到 HubSpot、Zoho 或自建数据库。",
+        complianceCheck: "合规核查",
+        identityCheck: "客户身份与产权确认",
+        identityCheckBody: "BUS 项目需要客户授权安装商代办申请。",
+        mcsMatch: "MCS 产品/安装资质匹配",
+        mcsMatchBody: "热泵、生物质锅炉和光伏项目均需记录对应证书链路。",
+        evidenceCheck: "DNO / SEG / ECO4 证据",
+        evidenceCheckBody: "根据技术类型自动显示 G98、G99、SEG 或 ECO4 所需材料。",
+        mkMetricSpend: "本月营销预算",
+        mkMetricSpendDelta: "CPL £147",
+        mkMetricLeads: "营销形成 Leads",
+        mkMetricLeadsDelta: "线上渠道 72%",
+        mkMetricActivated: "电销激活",
+        mkMetricActivatedDelta: "激活率 36.8%",
+        mkMetricVisits: "上门谈判",
+        mkMetricVisitsDelta: "方案转化 68%",
+        channelMatrix: "渠道矩阵展示",
+        onlineMarketing: "线上营销",
+        marketingDashboard: "数据看板",
+        thisMonth: "本月",
+        lastMonth: "上月",
+        mkMetric: "指标",
+        mkTarget: "目标",
+        mkActual: "实际",
+        mkConversion: "转化",
+        onlineTactics: "线上营销方式",
+        contentOps: "内容运营",
+        searchOps: "搜索获客",
+        salesOps: "转化动作",
+        mkChannel: "渠道/动作",
+        mkType: "类型",
+        mkCount: "数量",
+        mkOwner: "负责人",
+        mkImpact: "产出",
+        mkHealth: "健康度",
+        mkSearch: "搜索",
+        mkContent: "内容",
+        mkSocial: "社媒",
+        mkConversionOps: "转化",
+        mkAwareness: "认知",
+        mkConsideration: "考虑",
+        mkIntent: "意向",
+        mkNegotiation: "谈判",
+        energyCentre: "综合能源管理中心",
+        energyCentreBody: "按地址切换订单，统一查看光伏、储能、SEG、VPP、HEMS 和家庭负载优化。",
+        energyCurve: "用电 / 发电 / 卖电曲线",
+        todayCurve: "今日",
+        homeLoad: "用电",
+        pvGeneration: "发电",
+        exportPower: "卖电",
+        orderEnergyDashboard: "每个订单的数据看板",
+        liveTelemetry: "实时数据",
+        segProgress: "SEG 申请进展",
+        segSla: "审核 1-4 周",
+        tradingStrategy: "卖电与用电优化策略",
+        vppMode: "VPP / HEMS",
+        smartHomeControl: "智能家居控制板块",
+        remoteControl: "远程控制",
+        batteryStatus: "电池工作状态",
+        tradingPartner: "电力交易合作伙伴",
+        tradePrice: "交易价格",
+        majorLoads: "家庭主要负载",
+        solarToday: "今日光伏发电量",
+        batterySoc: "电池 SOC",
+        exportRevenue: "本月卖电收益",
+        segStatus: "SEG 状态",
+        supplierChoice: "选择 SEG 供应商",
+        handoverPack: "交付文件包",
+        dnoConfirmation: "DNO commissioning confirmation",
+        onlineSegSubmit: "在线提交 SEG",
+        exportAgreement: "签署 Export Agreement",
+        segPayment: "SEG 收益入账"
+      },
+      en: {
+        navAria: "Primary navigation",
+        navDashboard: "Dashboard",
+        navPipeline: "Pipeline",
+        navProjects: "Delivery Centre",
+        navCustomers: "Customers",
+        navMarketing: "Marketing",
+        navAccounts: "Accounts",
+        navEnergy: "Energy Management",
+        navCompliance: "Compliance",
+        viewSwitchAria: "View switcher",
+        userView: "User View",
+        adminView: "Admin View",
+        userPortalTitle: "Asha Patel's ArkGrid Installation Journey",
+        userPortalBody: "From online enquiry to integrated energy subscription, the customer can track owners, progress, video consent, site evidence, SEG and aftercare.",
+        portalOrderStatus: "Order status",
+        portalOrderStatusValue: "DNO approval",
+        portalDedicatedContact: "Dedicated contact",
+        portalInstallTeam: "Crew booking",
+        portalInstallTeamDelta: "Solar Crew London · 5★",
+        portalEnergyPlan: "Energy subscription",
+        portalEnergyPlanValue: "To confirm",
+        portalEnergyPlanDelta: "SEG + remote O&M",
+        customerJourney: "Customer Installation Journey",
+        customerVisible: "Customer visible",
+        crewAndEvidence: "Crew Cases and Certifications",
+        customerIdentityConsent: "Avatar ID and Consent Records",
+        videoConsent: "Video consent",
+        avatarConsentBody: "The customer has authorised video recording of construction progress for warranty, MCS evidence and aftercare diagnostics.",
+        serviceAndAftercare: "Aftercare and Remote O&M",
+        serviceSla: "24h SLA",
+        documentsAndComplaint: "Documents and Manual Complaint",
+        manualComplaint: "Manual complaint",
+        journeyOnlineConsult: "Online enquiry",
+        journeyRemoteDesign: "Remote survey design",
+        journeyDoorProposal: "Doorstep proposal and signing",
+        journeyOnsiteSurvey: "On-site survey",
+        journeyDno: "DNO application",
+        journeyMaterialTransport: "Material transport",
+        journeyWorkerBooking: "Worker booking",
+        journeyCrewCases: "Crew past cases",
+        journeyCertificates: "Certificates",
+        journeyAvatarId: "Avatar ID",
+        journeyVideoConsent: "Video-recording consent",
+        journeyConstructionProgress: "Construction progress",
+        journeySegProgress: "SEG progress",
+        journeyAftercare: "Aftercare service",
+        journeyContact: "Dedicated contact",
+        journeyEnergySub: "Energy management subscription",
+        journeyException: "Exception report",
+        journeyRemoteOps: "Remote O&M",
+        journeyRepair: "Repair request",
+        journeyWarranty: "Warranty download",
+        journeyComplaint: "Manual complaint",
+        statusDone: "Done",
+        statusActive: "Active",
+        statusUpcoming: "Upcoming",
+        statusAvailable: "Available",
+        warrantyDownload: "Warranty download",
+        exceptionReport: "Exception report",
+        remoteOpsTicket: "Remote O&M ticket",
+        repairBooking: "Repair booking",
+        todayFocus: "Today",
+        todayFocusBody: "4 BUS vouchers are close to the 120-day window, 2 DNO G99 approvals need follow-up, and 1 ECO4 evidence pack is incomplete.",
+        quotaTitle: "Pro usage",
+        quotaBody: "18% token allowance remains this month. Estimated shortage in 4 days; upgrade to Advanced for usage-based scaling.",
+        heroSubtitle: "Orchestrating power, empowering homes. Manage solar, storage, heat pump and insulation workflows from lead to aftercare.",
+        searchPlaceholder: "Search customer, postcode, solution or grant ID",
+        versionSwitch: "Versions",
+        installApp: "Install App",
+        installHint: "If no install prompt appears, use the browser share menu and choose Add to Home Screen.",
+        versionDetails: "Version Details",
+        currentPlan: "Current: Pro",
+        starterPlan: "Starter",
+        basicPlan: "Basic",
+        proPlan: "Pro",
+        advancedPlan: "Advanced",
+        price: "Price",
+        freePrice: "Free",
+        bestFor: "Best for",
+        starterFor: "Basic CRM trial",
+        starterDesc: "Basic customer, order and board browsing for trials and demos.",
+        access: "Access",
+        basicDesc: "Workflow orchestration and manual operations view only; automation steps are not available.",
+        limit: "Limit",
+        tokenLimit: "Token traffic limit",
+        proDesc: "Standard agent modules for CRM automation, pre-sales delivery collaboration and routine energy operations.",
+        recommendedUpgrade: "Recommended upgrade",
+        baseSubscription: "Base subscription",
+        monthly: "Monthly",
+        trafficBilling: "Traffic billing",
+        payAsYouGo: "Usage-based",
+        scaleFreely: "Elastic scaling",
+        customService: "Custom service",
+        included: "Included",
+        expertSetup: "Expert setup",
+        automationAccess: "Automation",
+        fullAccess: "Full access",
+        marketingModel: "Marketing model",
+        marketingModelDesc: "Channel matrix, creative strategy, lead scoring and conversion optimisation.",
+        engineeringModel: "Engineering model",
+        engineeringModelDesc: "Survey, DNO, construction, quality and site-exception collaboration.",
+        materialModel: "Material model",
+        materialModelDesc: "Auto-link survey reports to materials, stock, wastage and surplus returns.",
+        dispatchModel: "Delivery model",
+        dispatchModelDesc: "Dispatch, vehicle GPS, ETA, warehouse and on-site delivery optimisation.",
+        agentWorkflow: "Agent workflow",
+        agentWorkflowDesc: "Multi-agent autonomous operations with manual takeover and approval points.",
+        customBuild: "Professional customisation",
+        customBuildDesc: "Customised around SOPs, forms, ERP, energy partners and data interfaces.",
+        quotaReminder: "Usage and upgrade reminder",
+        quotaDetail: "Pro has 18% token allowance remaining. Advanced uses base subscription plus usage billing for concurrent marketing, engineering, material and delivery expert models.",
+        upgradeAdvanced: "Upgrade to Advanced",
+        accountProjects: "Major projects",
+        accountProjectsDelta: "1 admin + AI + manual per project",
+        aiAccounts: "AI accounts",
+        aiAccountsDelta: "Can take over standard modules",
+        humanAccounts: "Human accounts",
+        humanAccountsDelta: "Approval and manual takeover",
+        permissionGroups: "Permission groups",
+        permissionGroupsDelta: "Module-level isolation",
+        accountPermissionSystem: "Account and Permission System",
+        rbac: "RBAC",
+        projectAdmin: "Manager",
+        permissionScope: "Permission scope",
+        marketingRoleConfig: "Marketing Centre Role Configuration",
+        aiMarked: "AI-owned items highlighted",
+        roleType: "Role type",
+        rolePermission: "Permission",
+        aiOwner: "AI owner",
+        humanOwner: "Human owner",
+        hybridOwner: "AI + Human",
+        marketingDirector: "Marketing Director",
+        contentSpecialist: "Content Generation Specialist",
+        channelDevSpecialist: "Channel Account Development Specialist",
+        seoSpecialist: "SEO Specialist",
+        dataAnalystSpecialist: "Data Analysis Specialist",
+        telesalesScriptSpecialist: "Tele-sales and Doorstep Script Specialist",
+        objectionSpecialist: "Customer Objection Specialist",
+        export: "Export",
+        newLead: "New lead",
+        metricLeads: "New leads this month",
+        metricLeadsDelta: "+18% vs last month",
+        metricQuotes: "Quoted pipeline",
+        metricQuotesDelta: "Heat pumps 46%",
+        metricSchedule: "Install schedule",
+        metricScheduleDelta: "Next 14 days",
+        metricRisk: "Compliance risks",
+        metricRiskDelta: "Resolve this week",
+        activePipeline: "Active Pipeline",
+        filterAll: "All",
+        filterHeat: "Heat pump",
+        filterSolar: "Solar/storage",
+        emptyLeads: "No matching leads.",
+        tasks: "Action List",
+        hotOnly: "High priority only",
+        salesOpps: "Sales Opportunities",
+        byStage: "By stage",
+        byInstallType: "By install type",
+        byRegion: "By region",
+        thCustomer: "Customer",
+        thTech: "Technology",
+        thStage: "Stage",
+        thGrant: "Grant",
+        thValue: "Value",
+        thNext: "Next step",
+        installProjects: "Delivery Centre",
+        engineerView: "Engineer view",
+        thProject: "Project",
+        thRegion: "Region",
+        thStatus: "Status",
+        thProgress: "Progress",
+        thInstallDate: "Install date",
+        regionalCapacity: "Regional Capacity",
+        futureInstalls: "installs in the next 14 days",
+        surveyMetricBooked: "Surveys booked",
+        surveyMetricBookedDelta: "Second confirmation within 24h",
+        surveyMetricReports: "Survey reports due",
+        surveyMetricReportsDelta: "7-day SLA",
+        dnoMetricOpen: "DNO in progress",
+        dnoMetricOpenDelta: "Daily tracking",
+        dnoMetricExceptions: "Info requests / rejections",
+        dnoMetricExceptionsDelta: "24h response",
+        siteSurveyBoard: "Site Survey Board",
+        surveySla: "Reports <=7 days",
+        surveyChecklist: "Checklist",
+        dnoApplicationBoard: "DNO Application Board",
+        surveyChecklistSummary: "Survey Checklist Summary",
+        fromManuals: "From SOP manual and PV Survey Check List",
+        opsDue: "Due",
+        opsOwner: "Owner",
+        opsRisk: "Risk",
+        opsSla: "SLA",
+        surveyAppointment: "Appointment confirmation",
+        surveyPreparation: "Pre-survey preparation",
+        surveyOnsite: "On-site survey",
+        surveyReport: "Report / BOM / DNO pack",
+        dnoIntake: "Document intake",
+        dnoForm: "Form / review",
+        dnoSubmitted: "Submitted tracking",
+        dnoResult: "Info request / result",
+        constructionSiteBoard: "Construction Site Board",
+        roofCrew: "Roof",
+        scaffoldCrew: "Scaffolding",
+        electricalCrew: "Electrical",
+        dispatchSubsystem: "Dispatch Subsystem",
+        smartDispatch: "Smart dispatch",
+        dispatchOrder: "Order",
+        dispatchTeam: "Team",
+        dispatchScore: "Match score",
+        dispatchStatus: "Status",
+        gpsBoard: "Logistics Vehicle GPS Board",
+        materialEta: "Material ETA",
+        mainMaterials: "Main Materials",
+        auxMaterials: "Auxiliary Materials",
+        materialItem: "Material",
+        materialQty: "Qty",
+        materialRule: "Calculation / source",
+        materialAutoLink: "Auto-linked Material List",
+        fromExcel: "From Material list calculation.xlsx",
+        siteMediaBoard: "Site Video and Photo Board",
+        mcsArchive: "MCS audit archive",
+        siteTask: "Task",
+        siteEvidence: "Media evidence",
+        gpsEta: "ETA",
+        gpsLoad: "Load",
+        formulaSurveyInput: "Survey report input",
+        formulaExcelRule: "Excel formula relationship",
+        formulaOrderOutput: "Order material output",
+        busRules: "BUS Grant Rules",
+        busRulesBody: "Track voucher status, customer consent, completion and redemption for heat pump and biomass boiler projects.",
+        mcsBody: "Record installer accreditation, product directory checks, certificate issue and RECC/HIES consumer-code requirements.",
+        mcsCert: "MCS certificate",
+        mcsCertValue: "Target within 10 days after install",
+        consumerCode: "Consumer code",
+        productCheck: "Product check",
+        auditStatus: "Audit status",
+        auditStatusValue: "Evidence pack archived",
+        ecoSegBody: "Centralise eligibility evidence, export-tariff supplier records, and G98/G99 notification and approval milestones.",
+        eco4Close: "ECO4 closes",
+        segYear: "SEG year",
+        segYearValue: "2026-04-01 to 2027-03-31",
+        g98Value: "Post-install notification",
+        g99Value: "Pre-install approval",
+        customerDetail: "Customer Detail",
+        drawerSubtitleDefault: "Installation opportunity and compliance status",
+        close: "Close",
+        priorityHot: "High",
+        priorityMid: "Mid",
+        priorityNormal: "Normal",
+        complete: "Done",
+        todo: "To do",
+        fieldProject: "Project",
+        fieldState: "Status",
+        fieldTag: "Tag",
+        fieldOwner: "Owner",
+        opportunityValue: "Opportunity value",
+        grantRevenue: "Grant / revenue",
+        currentStage: "Current stage",
+        risk: "Risk",
+        nextStep: "Next step",
+        drawerAdvice: "Recommended automations: customer email, pre-install evidence checklist, quote versioning and owner reminders. Once a backend is connected, these fields can map to HubSpot, Zoho or a custom database.",
+        complianceCheck: "Compliance Check",
+        identityCheck: "Customer identity and ownership",
+        identityCheckBody: "BUS projects need customer consent for the installer to apply on their behalf.",
+        mcsMatch: "MCS product / installer match",
+        mcsMatchBody: "Heat pump, biomass boiler and solar projects should all record the correct certificate trail.",
+        evidenceCheck: "DNO / SEG / ECO4 evidence",
+        evidenceCheckBody: "Show G98, G99, SEG or ECO4 materials automatically by technology type.",
+        mkMetricSpend: "Marketing spend this month",
+        mkMetricSpendDelta: "CPL £147",
+        mkMetricLeads: "Marketing-generated leads",
+        mkMetricLeadsDelta: "Online channels 72%",
+        mkMetricActivated: "Tele-sales activations",
+        mkMetricActivatedDelta: "Activation rate 36.8%",
+        mkMetricVisits: "Doorstep negotiations",
+        mkMetricVisitsDelta: "Design conversion 68%",
+        channelMatrix: "Channel Matrix",
+        onlineMarketing: "Online marketing",
+        marketingDashboard: "Data Dashboard",
+        thisMonth: "This month",
+        lastMonth: "Last month",
+        mkMetric: "Metric",
+        mkTarget: "Target",
+        mkActual: "Actual",
+        mkConversion: "Conversion",
+        onlineTactics: "Online Marketing Tactics",
+        contentOps: "Content ops",
+        searchOps: "Search acquisition",
+        salesOps: "Conversion actions",
+        mkChannel: "Channel / action",
+        mkType: "Type",
+        mkCount: "Count",
+        mkOwner: "Owner",
+        mkImpact: "Output",
+        mkHealth: "Health",
+        mkSearch: "Search",
+        mkContent: "Content",
+        mkSocial: "Social",
+        mkConversionOps: "Conversion",
+        mkAwareness: "Awareness",
+        mkConsideration: "Consideration",
+        mkIntent: "Intent",
+        mkNegotiation: "Negotiation",
+        energyCentre: "Integrated Energy Management Centre",
+        energyCentreBody: "Switch by address to view PV, storage, SEG, VPP, HEMS and household load optimisation per order.",
+        energyCurve: "Load / generation / export curves",
+        todayCurve: "Today",
+        homeLoad: "Load",
+        pvGeneration: "Generation",
+        exportPower: "Export",
+        orderEnergyDashboard: "Per-order Data Dashboard",
+        liveTelemetry: "Live telemetry",
+        segProgress: "SEG Application Progress",
+        segSla: "1-4 week review",
+        tradingStrategy: "Export and Consumption Optimisation",
+        vppMode: "VPP / HEMS",
+        smartHomeControl: "Smart Home Control",
+        remoteControl: "Remote control",
+        batteryStatus: "Battery status",
+        tradingPartner: "Energy trading partner",
+        tradePrice: "Trading price",
+        majorLoads: "Major household loads",
+        solarToday: "PV generation today",
+        batterySoc: "Battery SOC",
+        exportRevenue: "Export revenue this month",
+        segStatus: "SEG status",
+        supplierChoice: "Select SEG supplier",
+        handoverPack: "Handover pack",
+        dnoConfirmation: "DNO commissioning confirmation",
+        onlineSegSubmit: "Submit SEG online",
+        exportAgreement: "Sign Export Agreement",
+        segPayment: "SEG payment started"
+      }
+    };
+
+    let currentLang = "zh";
+    const text = key => i18n[currentLang][key] || i18n.zh[key] || key;
+
+    const leads = [
+      { id: 1, name: "Asha Patel", postcode: "SW11", tech: "Air-to-water heat pump", type: "heat", stage: "survey", grant: "BUS £7,500", value: "£13,800", next: { zh: "热损失勘察", en: "Heat loss survey" }, risk: { zh: "Voucher 32 天", en: "Voucher 32 days" }, region: "London" },
+      { id: 2, name: "Green Acre Homes", postcode: "OX14", tech: "Solar + battery", type: "solar", stage: "quote", grant: "SEG", value: "£42,600", next: { zh: "准备 DNO G99 文件", en: "DNO G99 pack" }, risk: { zh: "低风险", en: "Low risk" }, region: "South East" },
+      { id: 3, name: "Mrs. Thompson", postcode: "M21", tech: "Loft + cavity insulation", type: "eco", stage: "qualify", grant: "ECO4", value: "£6,900", next: { zh: "福利资格证据", en: "Benefit evidence" }, risk: { zh: "证据缺失", en: "Evidence missing" }, region: "North West" },
+      { id: 4, name: "Northfield School", postcode: "B15", tech: "Solar PV", type: "solar", stage: "install", grant: "SEG", value: "£86,000", next: { zh: "调试验收", en: "Commissioning" }, risk: { zh: "MCS 待处理", en: "MCS pending" }, region: "Midlands" },
+      { id: 5, name: "Liam O'Connor", postcode: "CF24", tech: "Air-to-air heat pump", type: "heat", stage: "quote", grant: "BUS £2,500", value: "£7,400", next: { zh: "客户批准", en: "Customer approval" }, risk: { zh: "中风险", en: "Medium risk" }, region: "Wales" },
+      { id: 6, name: "Harbour Lettings", postcode: "BN1", tech: "Ground source heat pump", type: "heat", stage: "survey", grant: "BUS £7,500", value: "£29,500", next: { zh: "钻孔报价", en: "Borehole quote" }, risk: { zh: "规划核查", en: "Planning check" }, region: "South Coast" },
+      { id: 7, name: "Priya Singh", postcode: "LS8", tech: "Battery retrofit", type: "solar", stage: "qualify", grant: "SEG", value: "£5,800", next: { zh: "负荷曲线", en: "Load profile" }, risk: { zh: "低风险", en: "Low risk" }, region: "Yorkshire" },
+      { id: 8, name: "Warm Streets CIC", postcode: "NE6", tech: "ECO4 multi-measure", type: "eco", stage: "install", grant: "ECO4", value: "£118,000", next: { zh: "屋顶房照片", en: "Room-in-roof photos" }, risk: { zh: "审计抽样", en: "Audit sample" }, region: "North East" }
+    ];
+
+    const stages = [
+      ["qualify", { zh: "资格确认", en: "Qualification" }],
+      ["survey", { zh: "勘察", en: "Survey" }],
+      ["quote", { zh: "报价", en: "Quote" }],
+      ["install", { zh: "安装/交付", en: "Install / Handover" }]
+    ];
+
+    const tasks = [
+      { title: { zh: "提交 Asha Patel 的 BUS voucher", en: "Submit Asha Patel's BUS voucher" }, detail: { zh: "客户已确认报价，需补齐 MCS installer account 申请信息。", en: "Quote approved by customer; complete the MCS installer account application details." }, priority: "hot" },
+      { title: { zh: "Green Acre Homes G99 单线图", en: "Green Acre Homes G99 single-line diagram" }, detail: { zh: "逆变器型号已定，等待设计负责人复核出口限制。", en: "Inverter model selected; design lead needs to review export limitation." }, priority: "mid" },
+      { title: { zh: "ECO4 证据包抽检", en: "ECO4 evidence-pack audit sample" }, detail: { zh: "Warm Streets CIC 需要上传安装前照片和住户资格证据。", en: "Warm Streets CIC needs pre-install photos and resident eligibility evidence uploaded." }, priority: "hot" },
+      { title: { zh: "Northfield School MCS 证书", en: "Northfield School MCS certificate" }, detail: { zh: "调试完成，证书与 handover pack 待发送客户。", en: "Commissioning is complete; certificate and handover pack are ready to send." }, priority: "normal" },
+      { title: { zh: "Harbour Lettings 规划核查", en: "Harbour Lettings planning check" }, detail: { zh: "地源热泵钻孔方案需要地方规划要求确认。", en: "Ground-source borehole plan needs local planning requirements confirmed." }, priority: "mid" }
+    ];
+
+    const projects = [
+      ["Northfield School PV", "Birmingham", "Commissioning", "MCS pending", 84, "2026-06-12"],
+      ["Warm Streets CIC batch 07", "Newcastle", "Install week", "ECO evidence open", 62, "2026-06-14"],
+      ["Green Acre Homes phase 2", "Oxford", "Pre-install", "G99 submitted", 44, "2026-06-19"],
+      ["Patel residence", "London", "Survey booked", "BUS draft", 28, "2026-06-21"],
+      ["Harbour Lettings GSHP", "Brighton", "Design", "Planning check", 18, "2026-07-02"]
+    ];
+
+    const surveyStages = [
+      ["surveyAppointment", "appointment"],
+      ["surveyPreparation", "prep"],
+      ["surveyOnsite", "onsite"],
+      ["surveyReport", "report"]
+    ];
+
+    const surveyItems = [
+      { stage: "appointment", project: "Patel residence", owner: "Surveyor A", due: "2026-06-09", sla: { zh: "1 个工作日内确认", en: "Confirm within 1 working day" }, risk: { zh: "屋顶入口待确认", en: "Roof access to confirm" }, tags: ["SW11", "Deposit 15%+"] },
+      { stage: "prep", project: "60 Lindisfarne, Tamworth", owner: "Surveyor E", due: "2026-06-10", sla: { zh: "上门前 1 天准备", en: "Prep 1 day before visit" }, risk: { zh: "无人机飞行区待核查", en: "Drone flight zone check" }, tags: ["MPAN", "British Gas"] },
+      { stage: "onsite", project: "Green Acre Homes phase 2", owner: "Surveyor B", due: "2026-06-11", sla: { zh: "全程留痕，≥20 张照片", en: "Full audit trail, 20+ photos" }, risk: { zh: "G99 电气图纸依赖现场数据", en: "G99 drawings depend on field data" }, tags: ["Roof", "Electrics", "Cabling"] },
+      { stage: "report", project: "Harbour Lettings GSHP", owner: "Tech Reviewer", due: "2026-06-13", sla: { zh: "踏勘后 7 日内报告", en: "Report within 7 days" }, risk: { zh: "BOM 与结构报告待终审", en: "BOM and structural report final review" }, tags: ["BOM", "Risk", "DNO pack"] },
+      { stage: "report", project: "Northfield School PV", owner: "Survey Lead", due: "2026-06-08", sla: { zh: "客户签署确认单", en: "Customer sign-off" }, risk: { zh: "客户报告讲解待完成", en: "Report walkthrough pending" }, tags: ["Handover", "MCS"] }
+    ];
+
+    const dnoStages = [
+      ["dnoIntake", "intake"],
+      ["dnoForm", "form"],
+      ["dnoSubmitted", "submitted"],
+      ["dnoResult", "result"]
+    ];
+
+    const dnoItems = [
+      { stage: "intake", project: "Green Acre Homes phase 2", owner: "DNO Specialist", due: "2026-06-09", type: "G99", ref: "Draft", sla: { zh: "BOM 确认后 1 个工作日", en: "1 working day after BOM lock" }, risk: { zh: "单线图与负荷计算待核对", en: "Single-line diagram and load calc to verify" } },
+      { stage: "form", project: "Patel residence", owner: "DNO Specialist", due: "2026-06-10", type: "G98", ref: "MPAN S1100...", sla: { zh: "初审后 1 个工作日填报", en: "Form within 1 working day after intake" }, risk: { zh: "客户授权书待签署", en: "Customer authority pending" } },
+      { stage: "submitted", project: "Northfield School PV", owner: "Grid Liaison", due: "Daily", type: "G99", ref: "DNO-24-1189", sla: { zh: "每日跟踪，每周同步", en: "Daily tracking, weekly update" }, risk: { zh: "技术评估中", en: "Technical assessment in progress" } },
+      { stage: "result", project: "Warm Streets CIC batch 07", owner: "DNO Specialist", due: "24h", type: "G98", ref: "补料", sla: { zh: "补料/结果 24 小时处理", en: "Handle info request/result within 24h" }, risk: { zh: "电表照片需重传", en: "Meter photo needs resubmission" } },
+      { stage: "result", project: "Harbour Lettings GSHP", owner: "Survey Lead", due: "2026-06-12", type: "G99", ref: "Rejected", sla: { zh: "分析驳回原因并重提", en: "Analyse rejection and resubmit" }, risk: { zh: "容量超标需调整方案", en: "Capacity issue requires design change" } }
+    ];
+
+    const surveyChecklistItems = [
+      { title: { zh: "踏勘前", en: "Pre-survey" }, body: { zh: "核对设计方案、屋顶类型/朝向、无人机安全飞行区、工具、PPE、客户上门提醒。", en: "Check design proposal, roof type/facing, drone safety zone, tools, PPE and customer reminder." } },
+      { title: { zh: "屋顶与脚手架", en: "Roof and scaffolding" }, body: { zh: "测量屋顶长宽、坡度、结构梁尺寸、瓦片/障碍物、脚手架决策照片。", en: "Measure roof size, pitch, beam dimensions, tiles/obstacles and scaffolding photos." } },
+      { title: { zh: "电气与 MPAN", en: "Electrics and MPAN" }, body: { zh: "记录 MPAN、电表、cut-out、isolator、consumer unit、接地、单相/三相、EV charger。", en: "Record MPAN, meter, cut-out, isolator, consumer unit, earthing, phase type and EV charger." } },
+      { title: { zh: "线缆与系统位置", en: "Cabling and kit locations" }, body: { zh: "确认组件、逆变器、电池位置，DC/AC/CAT5 线缆路径，至少 2 个布线路径备选。", en: "Confirm panel, inverter and battery locations plus DC/AC/CAT5 routes with at least two cabling options." } },
+      { title: { zh: "Wi-Fi 与客户确认", en: "Wi-Fi and customer confirmation" }, body: { zh: "记录路由器位置、逆变器/电池信号覆盖、客户确认设计、风险、后续安装可能微调。", en: "Record router location, signal coverage, customer design confirmation, risks and possible install-day adjustments." } },
+      { title: { zh: "报告与归档", en: "Report and archive" }, body: { zh: "上传照片/视频，7 日内输出踏勘报告、BOM、风险评估、DNO 资料包并系统归档。", en: "Upload photos/videos, issue report/BOM/risk assessment/DNO pack within 7 days and archive in the system." } }
+    ];
+
+    const constructionStages = [
+      ["roofCrew", "roof"],
+      ["scaffoldCrew", "scaffold"],
+      ["electricalCrew", "electrical"]
+    ];
+
+    const constructionItems = [
+      { stage: "roof", project: "60 Lindisfarne PV", owner: "Roof Team R2", due: "Day 1-2", task: { zh: "支架定位、导轨校平、组件铺设、防鸟网", en: "Hook layout, rail levelling, module install, bird protection" }, evidence: { zh: "支架前后、组件、线缆、防水细节照片", en: "Before/after brackets, modules, cables and waterproofing photos" }, tags: ["Hook <=1.2m", "30cm edge", "MC4"] },
+      { stage: "roof", project: "Green Acre Homes", owner: "Roof Team R4", due: "Day 2", task: { zh: "平屋面橡胶垫、压载托盘、10 度支撑脚", en: "Flat-roof rubber pads, ballast trays and 10-degree feet" }, evidence: { zh: "压载均布、边板、密封胶、闭合防鸟屏障", en: "Ballast distribution, side panels, sealant and closed bird barrier" }, tags: ["Flat roof", "Ballast"] },
+      { stage: "scaffold", project: "Patel residence", owner: "Scaffold S1", due: "Start day", task: { zh: "脚手架搭建、护栏踏板、施工通道、HSE 验收", en: "Scaffold build, guardrails, boards, access route and HSE check" }, evidence: { zh: "脚手架验收照片、安全检查记录", en: "Scaffold acceptance photos and safety record" }, tags: ["PPE", "HSE"] },
+      { stage: "scaffold", project: "Northfield School", owner: "Scaffold S3", due: "D-1", task: { zh: "大屋面脚手架资源调度与拆除窗口确认", en: "Large-roof scaffold resource planning and dismantle window" }, evidence: { zh: "车辆到场、搭建完成、拆除前后照片", en: "Vehicle arrival, completed scaffold and dismantle photos" }, tags: ["School", "Access"] },
+      { stage: "electrical", project: "Harbour Lettings", owner: "Electrician E2", due: "Install day", task: { zh: "逆变器/电池安装、配电箱、AC/DC 接线、绝缘测试", en: "Inverter/battery, distribution box, AC/DC wiring and insulation test" }, evidence: { zh: "配电箱、端子压接、开路电压、APP 截图", en: "Distribution box, crimped terminals, open-circuit voltage and app screenshots" }, tags: ["18th", "BS 7671"] },
+      { stage: "electrical", project: "Warm Streets CIC", owner: "Electrician E5", due: "Commissioning", task: { zh: "并网调试、DNO 测试、Wi-Fi/APP 数据上传", en: "Grid commissioning, DNO test, Wi-Fi/app data upload" }, evidence: { zh: "调试报告、并网记录、发电数据截图", en: "Commissioning report, grid record and generation screenshots" }, tags: ["G98", "APP"] }
+    ];
+
+    const dispatchOrders = [
+      { order: "AG-260612-001", team: "5★ Solar Crew Manchester", score: "94", status: { zh: "已接单/交底中", en: "Accepted / briefing" } },
+      { order: "AG-260614-007", team: "4★ Midlands PV Team", score: "88", status: { zh: "候选团队确认", en: "Candidate confirmation" } },
+      { order: "AG-260619-004", team: "5★ Oxford Storage Crew", score: "96", status: { zh: "锁定施工工单", en: "Work order locked" } },
+      { order: "AG-260702-011", team: "3★ South Coast Electrical", score: "73", status: { zh: "等待 24h 响应", en: "Awaiting 24h response" } }
+    ];
+
+    const gpsVehicles = [
+      { vehicle: "VAN-07", route: "Warehouse -> Tamworth", eta: "10:40", load: { zh: "组件 12、导轨 9、逆变器 1、电池 2", en: "12 panels, 9 rails, 1 inverter, 2 batteries" }, progress: 72 },
+      { vehicle: "VAN-12", route: "Warehouse -> Oxford", eta: "13:20", load: { zh: "脚手架件、压载、辅材箱", en: "Scaffold kit, ballast and aux boxes" }, progress: 44 },
+      { vehicle: "VAN-03", route: "Supplier -> Birmingham", eta: "16:10", load: { zh: "Fastensol 导轨、压块、MC4、线缆", en: "Fastensol rails, clamps, MC4 and cables" }, progress: 28 },
+      { vehicle: "VAN-19", route: "Site -> Warehouse", eta: "18:00", load: { zh: "余料回收与废料打包", en: "Surplus return and waste packs" }, progress: 86 }
+    ];
+
+    const mainMaterials = [
+      { item: "Aiko Neostar 2S 460W All Black Panel", qty: "12 pcs", rule: { zh: "SUM(组件行数量)，来自 survey 组件排布", en: "SUM module row counts from survey layout" } },
+      { item: "Fastensol Rail 3550 / Renusol Rail", qty: "9 pcs", rule: { zh: "由组件尺寸、行数、方向和拼接关系计算", en: "Calculated from module size, rows, direction and row connection" } },
+      { item: "Fastensol Black End Clamp", qty: "16 pcs", rule: { zh: "按组件阵列边缘与方向计算", en: "Calculated by array edges and orientation" } },
+      { item: "Fastensol Black Universal Clamp", qty: "20 pcs", rule: { zh: "按行内组件数量和中压块间距计算", en: "Calculated by row module count and mid-clamp spacing" } },
+      { item: "Renusol Concrete pan Tile Roof Hook", qty: "42 pcs", rule: { zh: "基于 rafter distance、hook ≤1.2m、瓦片类型", en: "Based on rafter distance, hook <=1.2m and tile type" } },
+      { item: "Rahvolt 5kWh Battery", qty: "2 pcs", rule: { zh: "来自 survey 电池容量/数量字段", en: "From survey battery capacity and quantity fields" } },
+      { item: "RV5000H-S2 Inverter", qty: "1 pcs", rule: { zh: "来自 survey 逆变器型号", en: "From survey inverter type" } }
+    ];
+
+    const auxMaterials = [
+      { item: "Bird Protection + Critter Clips", qty: "22m / 74 pcs", rule: { zh: "CEILING(阵列周长)，clip 按 0.3m 间距", en: "CEILING array perimeter, clips at 0.3m spacing" } },
+      { item: "Dektite Lead Multicable Solar Flashing", qty: "2 pcs", rule: { zh: "按 string 数量/屋顶穿线点", en: "By string count / roof cable entry points" } },
+      { item: "AC isolator to Power box cable", qty: "30m", rule: { zh: "来自 survey AC 线缆长度 D23", en: "From survey AC cable length D23" } },
+      { item: "DC Isolator to Panels cable", qty: "20m", rule: { zh: "来自 survey DC 线缆长度 D25", en: "From survey DC cable length D25" } },
+      { item: "CAT6 FTP LSOH Cable", qty: "Wi-Fi length", rule: { zh: "来自 survey Wi-Fi/router 路径", en: "From survey Wi-Fi/router route" } },
+      { item: "AC Isolator / DC Isolator", qty: "2 / 2 pcs", rule: { zh: "Sheet3 根据逆变器和 string 自动取值", en: "Sheet3 picks values from inverter and string setup" } },
+      { item: "Solar Contractor Pack / Labels / Meter seals", qty: "1 pack", rule: { zh: "固定随单辅材", en: "Fixed per-order auxiliary pack" } }
+    ];
+
+    const materialFormulaLinks = [
+      { title: "Roof + module layout", body: { zh: "Survey 报告的屋顶类型、组件行数、横/竖装、rafter distance 写入 Calculation book，驱动 panel、rail、hook、clamp 数量。", en: "Survey roof type, module rows, portrait/landscape direction and rafter distance feed the calculation book for panels, rails, hooks and clamps." } },
+      { title: "Cable routes", body: { zh: "Survey 的 AC/DC/通信线缆路径和长度映射到 D23、D25、D26、B42，自动生成 AC cable、DC cable、CAT6。", en: "Survey AC/DC/comms routes and lengths map to D23, D25, D26 and B42 to generate AC cable, DC cable and CAT6." } },
+      { title: "Inverter + battery", body: { zh: "Survey 的 inverter type、battery capacity、battery number 映射到 B33/B36/D36，自动带出隔离开关、电池线、CT clamp。", en: "Survey inverter type, battery capacity and battery number map to B33/B36/D36 and drive isolators, battery leads and CT clamp." } },
+      { title: "Flat roof branch", body: { zh: "Flat roof sheet 按 rubber pads、ballast trays、front/rear feet、10° 支撑脚和压载数量生成平屋面主材。", en: "The flat-roof sheet calculates rubber pads, ballast trays, front/rear feet, 10-degree supports and ballast quantities." } },
+      { title: "Consumables/additional", body: { zh: "consumables 与 additional 工作表承接胶带、垫片、螺丝、硅胶、SDS bit、PVC/galv trunking 等一次性/特殊需求材料。", en: "Consumables and additional sheets cover tape, washers, screws, silicone, SDS bits, PVC/galv trunking and special-request materials." } },
+      { title: "Order linkage", body: { zh: "每个订单绑定 survey report ID，材料清单按订单锁定，推送仓储、物流 GPS、现场经理和余料回收。", en: "Each order links to a survey report ID; the material list is locked per order and pushed to warehouse, GPS logistics, site manager and surplus return." } }
+    ];
+
+    const siteMedia = [
+      { title: { zh: "屋顶/支架/组件", en: "Roof / brackets / modules" }, count: "38", body: { zh: "屋顶全景、hook 固定、导轨校平、组件、防鸟网、防水细节。", en: "Roof overview, hook fixing, rail levelling, modules, bird protection and waterproof details." } },
+      { title: { zh: "脚手架与安全", en: "Scaffolding and safety" }, count: "16", body: { zh: "脚手架搭建、护栏踏板、PPE、高空作业安全检查。", en: "Scaffold build, guardrails, boards, PPE and height-work safety checks." } },
+      { title: { zh: "电气与调试", en: "Electrical and commissioning" }, count: "29", body: { zh: "配电箱、端子压接、绝缘/接地测试、DNO 并网、APP 截图。", en: "Distribution box, crimped terminals, insulation/earth tests, DNO grid test and app screenshots." } },
+      { title: { zh: "客户验收/现场清理", en: "Customer handover / site clean" }, count: "12", body: { zh: "客户签字、发电演示、垃圾分类、余料回收、清理前后照片。", en: "Customer signature, generation demo, waste sorting, surplus return and before/after clean photos." } }
+    ];
+
+    const energyOrders = [
+      {
+        id: "tamworth",
+        address: "60 Lindisfarne, Tamworth B77 2QN",
+        customer: "Weng Ho",
+        pv: "24.8 kWh",
+        battery: { zh: "充电中 · SOC 68%", en: "Charging · SOC 68%" },
+        partner: "Octopus Energy",
+        price: "15.0p/kWh",
+        loads: { zh: "热水 4.2kWh · 厨房 3.1kWh · EV 7.8kWh", en: "Hot water 4.2kWh · Kitchen 3.1kWh · EV 7.8kWh" },
+        strategy: [
+          { zh: "10:00-15:00 优先给电池充电，SOC 到 85% 后转卖电。", en: "Prioritise battery charging from 10:00-15:00, then export once SOC reaches 85%." },
+          { zh: "晚高峰 17:00-20:00 使用电池供家庭主要负载，降低购电。", en: "Use battery for major household loads during 17:00-20:00 peak to reduce import." },
+          { zh: "EV 充电推迟到 Octopus Go 低价窗口。", en: "Shift EV charging to the Octopus Go off-peak window." }
+        ],
+        seg: "onlineSegSubmit",
+        revenue: "£38.60",
+        curve: { load: [1.2,1.0,0.9,1.4,2.7,3.4,2.9,4.1,3.2,2.2,1.8,2.6], pv: [0,0,0.5,2.2,4.8,5.4,5.1,4.2,2.7,1.2,0.1,0], export: [0,0,0,0.8,2.1,3.2,2.7,1.6,0.6,0,0,0] },
+        devices: [
+          { name: { zh: "电池模式", en: "Battery mode" }, state: { zh: "自用优先", en: "Self-use first" }, active: true },
+          { name: { zh: "EV 充电", en: "EV charging" }, state: { zh: "低价窗口启动", en: "Off-peak scheduled" }, active: true },
+          { name: { zh: "热水器", en: "Immersion heater" }, state: { zh: "PV 富余时开启", en: "On during PV surplus" }, active: false }
+        ]
+      },
+      {
+        id: "oxford",
+        address: "Green Acre Homes, Oxford OX14",
+        customer: "Green Acre Homes",
+        pv: "63.5 kWh",
+        battery: { zh: "放电中 · SOC 52%", en: "Discharging · SOC 52%" },
+        partner: "Good Energy",
+        price: "12.0p/kWh",
+        loads: { zh: "公共照明 6.8kWh · 热泵 18.4kWh · 办公 9.5kWh", en: "Common lighting 6.8kWh · Heat pump 18.4kWh · Office 9.5kWh" },
+        strategy: [
+          { zh: "办公负载白天直接消纳 PV，减少电池循环损耗。", en: "Use PV directly for daytime office load to reduce battery cycling." },
+          { zh: "电池保留 35% SOC 参与晚间 VPP 需求响应。", en: "Reserve 35% SOC for evening VPP demand-response events." },
+          { zh: "SEG 审核完成前按内部影子价格模拟收益。", en: "Model revenue with an internal shadow price until SEG approval completes." }
+        ],
+        seg: "dnoConfirmation",
+        revenue: "£92.40",
+        curve: { load: [2.2,2.0,2.4,3.6,5.8,7.2,8.1,7.6,6.8,5.2,3.7,2.9], pv: [0,0.2,1.4,5.8,9.5,11.8,12.1,10.4,7.2,3.5,0.7,0], export: [0,0,0.2,1.6,3.4,4.2,3.5,2.8,1.4,0.3,0,0] },
+        devices: [
+          { name: { zh: "热泵", en: "Heat pump" }, state: { zh: "负荷平移", en: "Load shifting" }, active: true },
+          { name: { zh: "电池 VPP", en: "Battery VPP" }, state: { zh: "待调度", en: "Standing by" }, active: true },
+          { name: { zh: "公共照明", en: "Common lighting" }, state: { zh: "定时控制", en: "Scheduled" }, active: true }
+        ]
+      },
+      {
+        id: "brighton",
+        address: "Harbour Lettings, Brighton BN1",
+        customer: "Harbour Lettings",
+        pv: "18.9 kWh",
+        battery: { zh: "备用模式 · SOC 91%", en: "Backup mode · SOC 91%" },
+        partner: "Octopus Energy",
+        price: "15.0p/kWh",
+        loads: { zh: "洗衣 2.2kWh · 厨房 2.8kWh · 采暖 6.1kWh", en: "Laundry 2.2kWh · Kitchen 2.8kWh · Heating 6.1kWh" },
+        strategy: [
+          { zh: "阴天保持较高 SOC，减少租户晚间停电风险。", en: "Keep higher SOC on cloudy days to reduce evening outage risk for tenants." },
+          { zh: "中午富余电量优先卖电，避免电池满充空转。", en: "Export noon surplus first to avoid idle full battery." },
+          { zh: "洗衣/烘干负载建议移到 11:00-14:00。", en: "Move laundry/dryer load to 11:00-14:00." }
+        ],
+        seg: "exportAgreement",
+        revenue: "£21.70",
+        curve: { load: [0.9,0.8,0.8,1.2,2.5,3.1,2.8,2.6,2.1,1.7,1.4,1.0], pv: [0,0,0.3,1.4,3.6,4.1,3.8,2.9,1.9,0.8,0,0], export: [0,0,0,0.2,0.9,1.3,1.1,0.7,0.2,0,0,0] },
+        devices: [
+          { name: { zh: "备用电源", en: "Backup reserve" }, state: { zh: "90% 保留", en: "90% reserve" }, active: true },
+          { name: { zh: "租户负载", en: "Tenant load" }, state: { zh: "建议错峰", en: "Shift recommended" }, active: false },
+          { name: { zh: "SEG 支付", en: "SEG payment" }, state: { zh: "协议待签", en: "Agreement pending" }, active: false }
+        ]
+      }
+    ];
+
+    const segStages = ["handoverPack", "dnoConfirmation", "supplierChoice", "onlineSegSubmit", "exportAgreement", "segPayment"];
+
+    const roleProfiles = {
+      marketingDirector: { mode: "hybrid", permission: { zh: "营销预算、渠道策略、AI 结果审批", en: "Marketing budget, channel strategy, AI output approval" } },
+      contentSpecialist: { mode: "ai", permission: { zh: "内容生成、素材版本、专业网站发布建议", en: "Content generation, creative variants, professional-site publishing suggestions" } },
+      channelDevSpecialist: { mode: "ai", permission: { zh: "渠道账号开发、意见领袖拓展、账号健康度监控", en: "Channel account development, influencer expansion, account health monitoring" } },
+      seoSpecialist: { mode: "ai", permission: { zh: "Google 关键词、SEO、LLM 搜索优化", en: "Google keywords, SEO and LLM search optimisation" } },
+      dataAnalystSpecialist: { mode: "ai", permission: { zh: "数据看板、归因、CPL 与转化漏斗", en: "Dashboards, attribution, CPL and conversion funnel" } },
+      telesalesScriptSpecialist: { mode: "ai", permission: { zh: "电销激活、WhatsApp 拉群、上门话术优化", en: "Tele-sales activation, WhatsApp group scripts and doorstep pitch optimisation" } },
+      objectionSpecialist: { mode: "ai", permission: { zh: "客户异议识别、回复建议、谈判风险预警", en: "Objection detection, response suggestions and negotiation risk alerts" } }
+    };
+
+    const accountProjects = [
+      { project: "Marketing Centre", admin: "Mia Chen", ai: "Ark-MKT Agent", human: "Mia Chen", scope: { zh: "营销角色、渠道、内容、数据看板", en: "Marketing roles, channels, content and dashboards" } },
+      { project: "Sales Pipeline", admin: "Oliver Smith", ai: "Ark-Sales Agent", human: "Sales Ops", scope: { zh: "线索、报价、客户沟通", en: "Leads, quotes and customer communication" } },
+      { project: "Delivery Centre", admin: "Daniel Wu", ai: "Ark-Delivery Agent", human: "Delivery Manager", scope: { zh: "踏勘、DNO、施工、材料、物流", en: "Survey, DNO, construction, materials and logistics" } },
+      { project: "Energy Centre", admin: "Emma Lewis", ai: "Ark-Energy Agent", human: "Energy Advisor", scope: { zh: "SEG、VPP、HEMS、收益策略", en: "SEG, VPP, HEMS and revenue strategy" } }
+    ];
+
+    const marketingRoles = [
+      "marketingDirector",
+      "contentSpecialist",
+      "channelDevSpecialist",
+      "seoSpecialist",
+      "dataAnalystSpecialist",
+      "telesalesScriptSpecialist",
+      "objectionSpecialist"
+    ];
+
+    const customerJourneyItems = [
+      { key: "journeyOnlineConsult", status: "done", detail: { zh: "WhatsApp 与网站表单已归档，需求为 12 片光伏 + 10kWh 电池。", en: "WhatsApp and web-form enquiry archived for 12 PV panels plus 10kWh battery." } },
+      { key: "journeyRemoteDesign", status: "done", detail: { zh: "卫星图、屋顶朝向、初版设计和收益测算已发送。", en: "Satellite view, roof orientation, first design and yield estimate sent." } },
+      { key: "journeyDoorProposal", status: "done", detail: { zh: "上门讲解方案，客户电子签约并支付定金。", en: "Doorstep proposal explained, e-signature completed and deposit paid." } },
+      { key: "journeyOnsiteSurvey", status: "active", detail: { zh: "踏勘员确认屋顶、电气、MPAN、逆变器与电池位置。", en: "Surveyor confirming roof, electrics, MPAN, inverter and battery locations." } },
+      { key: "journeyDno", status: "active", detail: { zh: "G99 资料包已提交，等待 DNO 技术审批。", en: "G99 pack submitted and waiting for DNO technical approval." } },
+      { key: "journeyMaterialTransport", status: "upcoming", detail: { zh: "主材锁定仓库，车辆 ETA 将在安装前 48 小时开放。", en: "Main materials reserved; vehicle ETA opens 48h before install." } },
+      { key: "journeyWorkerBooking", status: "active", detail: { zh: "Solar Crew London 预约中，屋顶、电气、脚手架团队待最终确认。", en: "Solar Crew London booking in progress; roof, electrical and scaffold teams pending final confirmation." } },
+      { key: "journeyCrewCases", status: "available", detail: { zh: "可查看此安装队近 3 个同类项目案例与评分。", en: "View the crew's three recent similar projects and ratings." } },
+      { key: "journeyCertificates", status: "available", detail: { zh: "MCS、NAPIT、保险、HSE 与产品资质证书可预览。", en: "Preview MCS, NAPIT, insurance, HSE and product certificates." } },
+      { key: "journeyAvatarId", status: "done", detail: { zh: "客户头像、订单 ID、地址和授权人信息已核验。", en: "Customer avatar, order ID, address and authorised person verified." } },
+      { key: "journeyVideoConsent", status: "done", detail: { zh: "客户同意视频记录施工进度，用于质保和售后诊断。", en: "Customer consented to construction progress video for warranty and diagnostics." } },
+      { key: "journeyConstructionProgress", status: "upcoming", detail: { zh: "安装日开放屋顶、脚手架、电气、调试照片视频。", en: "Roof, scaffold, electrical and commissioning media open on install day." } },
+      { key: "journeySegProgress", status: "upcoming", detail: { zh: "并网和 MCS 文件完成后启动 SEG 申请。", en: "SEG application starts after commissioning and MCS handover." } },
+      { key: "journeyAftercare", status: "available", detail: { zh: "安装后进入 30 天密集回访和年度维护提醒。", en: "After install, 30-day close follow-up and annual maintenance reminders begin." } },
+      { key: "journeyContact", status: "available", detail: { zh: "专人 Ella Morris 负责客户沟通与异常升级。", en: "Ella Morris owns customer communication and exception escalation." } },
+      { key: "journeyEnergySub", status: "upcoming", detail: { zh: "可订阅综合能源管理，接入 SEG、远程运维和优化策略。", en: "Subscribe to energy management for SEG, remote O&M and optimisation." } },
+      { key: "journeyException", status: "available", detail: { zh: "屋顶、电气、材料延误等异常可一键提交报告。", en: "Submit roof, electrical or material-delay exception reports." } },
+      { key: "journeyRemoteOps", status: "available", detail: { zh: "逆变器、电池、发电曲线与告警支持远程诊断。", en: "Remote diagnostics for inverter, battery, generation curve and alerts." } },
+      { key: "journeyRepair", status: "available", detail: { zh: "客户可发起报修预约，系统自动分派售后工单。", en: "Customer can request repair; system dispatches aftercare ticket." } },
+      { key: "journeyWarranty", status: "available", detail: { zh: "质保书、交付包、证书和发票可下载。", en: "Warranty, handover pack, certificates and invoice are downloadable." } },
+      { key: "journeyComplaint", status: "available", detail: { zh: "人工投诉通道直达客户成功经理和管理层。", en: "Manual complaint route reaches customer success and management." } }
+    ];
+
+    const customerCaseCards = [
+      { title: { zh: "Richmond 5.5kW 屋顶光伏", en: "Richmond 5.5kW rooftop PV" }, body: { zh: "同类型斜屋顶，2 天完成安装，客户评分 4.9/5。", en: "Similar pitched roof, 2-day install, customer rating 4.9/5." }, metric: "4.9★" },
+      { title: { zh: "Croydon 光伏 + 电池", en: "Croydon PV + battery" }, body: { zh: "10kWh 电池与 SEG 申请同步交付，首月卖电 £31.40。", en: "10kWh battery and SEG delivered together; first-month export £31.40." }, metric: "£31.40" },
+      { title: { zh: "Ealing G99 并网项目", en: "Ealing G99 grid project" }, body: { zh: "DNO 审批一次通过，施工视频证据完整归档。", en: "DNO approved first time, full construction video evidence archived." }, metric: "G99" }
+    ];
+
+    const customerCredentials = [
+      { label: { zh: "MCS 认证", en: "MCS certification" }, value: "MCS-87921" },
+      { label: { zh: "电气资质", en: "Electrical accreditation" }, value: "NAPIT / BS 7671" },
+      { label: { zh: "保险", en: "Insurance" }, value: "£5m Public Liability" },
+      { label: { zh: "视频授权", en: "Video consent" }, value: "2026-06-08 14:20" }
+    ];
+
+    const customerServices = [
+      { title: "exceptionReport", body: { zh: "提交现场异常、材料缺件、工期延误或发电异常。", en: "Submit site exception, missing material, delay or generation issue." }, status: "statusAvailable" },
+      { title: "remoteOpsTicket", body: { zh: "远程读取逆变器、电池、家庭负载与告警日志。", en: "Read inverter, battery, household load and alert logs remotely." }, status: "statusAvailable" },
+      { title: "repairBooking", body: { zh: "选择可上门时间，售后工程师确认配件和路线。", en: "Pick visit window; aftercare engineer confirms parts and route." }, status: "statusAvailable" }
+    ];
+
+    const customerActions = [
+      { title: "warrantyDownload", detail: { zh: "下载质保书、MCS 证书、产品说明书和交付包。", en: "Download warranty, MCS certificate, product manuals and handover pack." }, priority: "normal" },
+      { title: "journeyEnergySub", detail: { zh: "订阅综合能源管理，获得卖电策略、远程运维和年度报告。", en: "Subscribe to energy management for export strategy, remote O&M and annual report." }, priority: "mid" },
+      { title: "manualComplaint", detail: { zh: "人工投诉 24 小时内由客户成功经理回复并升级记录。", en: "Manual complaint receives customer-success response and escalation log within 24h." }, priority: "hot" }
+    ];
+
+    const customers = [
+      ["Asha Patel", "Owner occupier", "SW11", "Gas boiler replacement", "EPC C", "BUS eligible"],
+      ["Green Acre Homes", "Developer", "OX14", "Solar + battery portfolio", "DNO active", "SEG target"],
+      ["Warm Streets CIC", "Community retrofit", "NE6", "ECO4 whole-house", "PAS evidence", "Audit watch"],
+      ["Northfield School", "Public sector", "B15", "PV roof array", "MCS handover", "Invoice ready"],
+      ["Harbour Lettings", "Landlord", "BN1", "Ground source heat pump", "Tenant access", "Planning check"],
+      ["Priya Singh", "Homeowner", "LS8", "Battery retrofit", "Smart meter", "Quote draft"]
+    ];
+
+    const channelMatrix = [
+      { name: { zh: "搜索获客", en: "Search acquisition" }, stage: "mkIntent", health: 86, leads: 118, spend: "£14.8k", ownerRole: "seoSpecialist" },
+      { name: { zh: "内容种草", en: "Content demand creation" }, stage: "mkConsideration", health: 74, leads: 49, spend: "£6.2k", ownerRole: "contentSpecialist" },
+      { name: { zh: "社媒视频/图片", en: "Social video / image" }, stage: "mkAwareness", health: 69, leads: 37, spend: "£5.6k", ownerRole: "channelDevSpecialist" },
+      { name: { zh: "电销与私域群", en: "Tele-sales and WhatsApp groups" }, stage: "mkNegotiation", health: 81, leads: 57, spend: "£11.8k", ownerRole: "telesalesScriptSpecialist" }
+    ];
+
+    const marketingDashboard = [
+      { metric: { zh: "点击到 Leads", en: "Clicks to leads" }, target: "240", actual: "261", conversion: "8.4%", ownerRole: "dataAnalystSpecialist" },
+      { metric: { zh: "Leads 到电销激活", en: "Leads to tele-sales activation" }, target: "88", actual: "96", conversion: "36.8%", ownerRole: "dataAnalystSpecialist" },
+      { metric: { zh: "电销到 WhatsApp 拉群", en: "Tele-sales to WhatsApp groups" }, target: "52", actual: "61", conversion: "63.5%", ownerRole: "telesalesScriptSpecialist" },
+      { metric: { zh: "拉群到上门谈判", en: "Groups to doorstep negotiation" }, target: "28", actual: "31", conversion: "50.8%", ownerRole: "telesalesScriptSpecialist" },
+      { metric: { zh: "上门谈判到设计方案", en: "Negotiation to design proposal" }, target: "20", actual: "21", conversion: "67.7%", ownerRole: "objectionSpecialist" },
+      { metric: { zh: "远程测量报告完成", en: "Remote survey reports completed" }, target: "24", actual: "29", conversion: "93.5%", ownerRole: "dataAnalystSpecialist" }
+    ];
+
+    const marketingTactics = [
+      { channel: { zh: "谷歌关键词优化", en: "Google keyword optimisation" }, type: "mkSearch", count: "148", ownerRole: "seoSpecialist", impact: { zh: "高意向 Leads 76", en: "76 high-intent leads" } },
+      { channel: { zh: "搜索引擎优化", en: "Search engine optimisation" }, type: "mkSearch", count: "36", ownerRole: "seoSpecialist", impact: { zh: "自然 Leads 42", en: "42 organic leads" } },
+      { channel: { zh: "大模型搜索优化", en: "LLM search optimisation" }, type: "mkSearch", count: "18", ownerRole: "seoSpecialist", impact: { zh: "品牌问答曝光 12.6k", en: "12.6k branded answer impressions" } },
+      { channel: { zh: "点评网站回复帖子数", en: "Review-site reply posts" }, type: "mkContent", count: "64", ownerRole: "objectionSpecialist", impact: { zh: "评分稳定 4.7", en: "Rating held at 4.7" } },
+      { channel: { zh: "意见领袖账号数", en: "Influencer accounts added" }, type: "mkContent", count: "12", ownerRole: "channelDevSpecialist", impact: { zh: "转介绍 Leads 19", en: "19 referral leads" } },
+      { channel: { zh: "专业网站发布内容数", en: "Professional-site content posts" }, type: "mkContent", count: "27", ownerRole: "contentSpecialist", impact: { zh: "安装商询盘 23", en: "23 installer enquiries" } },
+      { channel: { zh: "Instagram 视频数量", en: "Instagram videos" }, type: "mkSocial", count: "42", ownerRole: "contentSpecialist", impact: { zh: "互动 8.9k", en: "8.9k engagements" } },
+      { channel: { zh: "Instagram 图片数量", en: "Instagram images" }, type: "mkSocial", count: "96", ownerRole: "contentSpecialist", impact: { zh: "保存 1.3k", en: "1.3k saves" } },
+      { channel: { zh: "TikTok 视频数量", en: "TikTok videos" }, type: "mkSocial", count: "38", ownerRole: "contentSpecialist", impact: { zh: "观看 214k", en: "214k views" } },
+      { channel: { zh: "TikTok 图片数量", en: "TikTok images" }, type: "mkSocial", count: "54", ownerRole: "contentSpecialist", impact: { zh: "互动 6.1k", en: "6.1k engagements" } },
+      { channel: { zh: "形成的 Leads 数", en: "Leads generated" }, type: "mkConversionOps", count: "261", ownerRole: "dataAnalystSpecialist", impact: { zh: "CPL £147", en: "CPL £147" } },
+      { channel: { zh: "电销激活数", en: "Tele-sales activations" }, type: "mkConversionOps", count: "96", ownerRole: "telesalesScriptSpecialist", impact: { zh: "激活率 36.8%", en: "36.8% activation rate" } },
+      { channel: { zh: "WhatsApp 拉群数", en: "WhatsApp groups created" }, type: "mkConversionOps", count: "61", ownerRole: "telesalesScriptSpecialist", impact: { zh: "群内报价 44", en: "44 in-group quotes" } },
+      { channel: { zh: "上门谈判数", en: "Doorstep negotiations" }, type: "mkConversionOps", count: "31", ownerRole: "objectionSpecialist", impact: { zh: "成交预测 £384k", en: "£384k forecast" } },
+      { channel: { zh: "设计方案数量", en: "Design proposals" }, type: "mkConversionOps", count: "21", ownerRole: "objectionSpecialist", impact: { zh: "平均 2.1 天完成", en: "2.1 days average turnaround" } },
+      { channel: { zh: "远程测量报告数量", en: "Remote survey reports" }, type: "mkConversionOps", count: "29", ownerRole: "dataAnalystSpecialist", impact: { zh: "报告完成率 93.5%", en: "93.5% completion rate" } }
+    ];
+
+    const board = document.getElementById("leadBoard");
+    const empty = document.getElementById("emptyState");
+    const search = document.getElementById("search");
+    let activeFilter = "all";
+    let hotOnly = false;
+    let currentLeadId = null;
+    let activeEnergyId = "tamworth";
+    let operationMode = "ai";
+    let deferredInstallPrompt = null;
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang === "zh" ? "zh-CN" : "en-GB";
+      document.querySelectorAll("[data-i18n]").forEach(element => {
+        element.textContent = text(element.dataset.i18n);
+      });
+      document.querySelectorAll("[data-title-i18n]").forEach(element => {
+        element.title = text(element.dataset.titleI18n);
+      });
+      document.querySelectorAll("[data-placeholder-i18n]").forEach(element => {
+        element.placeholder = text(element.dataset.placeholderI18n);
+      });
+      document.querySelectorAll("[data-aria-i18n]").forEach(element => {
+        element.setAttribute("aria-label", text(element.dataset.ariaI18n));
+      });
+      document.querySelectorAll(".lang-toggle button").forEach(button => {
+        button.classList.toggle("active", button.dataset.lang === lang);
+      });
+      renderBoard();
+      renderTasks();
+      renderTables();
+      renderAccounts();
+      renderMarketing();
+      renderOpsBoards();
+      renderConstructionOps();
+      renderEnergyCentre();
+      renderUserPortal();
+      document.querySelectorAll(".mode-badge").forEach(button => {
+        button.classList.toggle("active", button.dataset.mode === operationMode);
+      });
+      if (currentLeadId && document.getElementById("drawer").classList.contains("open")) {
+        openLead(currentLeadId);
+      }
+    }
+
+    function renderBoard() {
+      const query = search.value.trim().toLowerCase();
+      const filtered = leads.filter(lead => {
+        const byFilter = activeFilter === "all" || lead.type === activeFilter;
+        const bySearch = [lead.name, lead.postcode, lead.tech, lead.grant, lead.region].join(" ").toLowerCase().includes(query);
+        return byFilter && bySearch;
+      });
+
+      board.innerHTML = stages.map(([key, title]) => {
+        const cards = filtered.filter(lead => lead.stage === key).map(lead => `
+          <article class="lead-card" data-id="${lead.id}">
+            <strong>${lead.name}</strong>
+            <div class="meta">
+              <span class="tag ${lead.type}">${lead.tech}</span>
+              <span class="tag">${lead.postcode}</span>
+              <span class="tag ${lead.risk.zh.includes("缺失") || lead.risk.en.includes("pending") || lead.risk.en.includes("Voucher") ? "risk" : ""}">${lead.risk[currentLang]}</span>
+            </div>
+            <div class="value-row"><span>${lead.grant}</span><b>${lead.value}</b></div>
+          </article>
+        `).join("");
+
+        return `
+          <div class="lane">
+            <div class="lane-title"><span>${title[currentLang]}</span><b>${filtered.filter(lead => lead.stage === key).length}</b></div>
+            ${cards}
+          </div>
+        `;
+      }).join("");
+
+      empty.style.display = filtered.length ? "none" : "block";
+      document.querySelectorAll(".lead-card").forEach(card => {
+        card.addEventListener("click", () => openLead(Number(card.dataset.id)));
+      });
+    }
+
+    function renderTasks() {
+      const visible = tasks.filter(task => !hotOnly || task.priority === "hot");
+      document.getElementById("taskList").innerHTML = visible.map(task => `
+        <label class="task">
+          <input type="checkbox">
+          <span><strong>${task.title[currentLang]}</strong><p>${task.detail[currentLang]}</p></span>
+          <span class="priority ${task.priority === "hot" ? "hot" : task.priority === "mid" ? "mid" : ""}">${task.priority === "hot" ? text("priorityHot") : task.priority === "mid" ? text("priorityMid") : text("priorityNormal")}</span>
+        </label>
+      `).join("");
+    }
+
+    function renderTables() {
+      document.getElementById("pipelineRows").innerHTML = leads.map(lead => `
+        <tr><td>${lead.name}<br><span class="subtitle">${lead.postcode} · ${lead.region}</span></td><td>${lead.tech}</td><td>${stages.find(s => s[0] === lead.stage)[1][currentLang]}</td><td>${lead.grant}</td><td>${lead.value}</td><td>${lead.next[currentLang]}</td></tr>
+      `).join("");
+
+      document.getElementById("projectRows").innerHTML = projects.map(project => `
+        <tr><td>${project[0]}</td><td>${project[1]}</td><td><span class="tag wait">${project[2]}</span></td><td>${project[3]}</td><td><div class="progress" aria-label="${text("thProgress")} ${project[4]}%"><span style="width:${project[4]}%"></span></div></td><td>${project[5]}</td></tr>
+      `).join("");
+
+      document.getElementById("customerCards").innerHTML = customers.map(customer => `
+        <article class="card">
+          <h3>${customer[0]}</h3>
+          <div class="meta"><span class="tag">${customer[1]}</span><span class="tag">${customer[2]}</span></div>
+          <div class="field-grid">
+            <div class="field"><label>${text("fieldProject")}</label><strong>${customer[3]}</strong></div>
+            <div class="field"><label>${text("fieldState")}</label><strong>${customer[4]}</strong></div>
+            <div class="field"><label>${text("fieldTag")}</label><strong>${customer[5]}</strong></div>
+            <div class="field"><label>${text("fieldOwner")}</label><strong>Ops Team</strong></div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function ownerBadge(roleKey) {
+      const profile = roleProfiles[roleKey];
+      const mode = profile?.mode || "ai";
+      const label = mode === "hybrid" ? text("hybridOwner") : mode === "human" ? text("humanOwner") : text("aiOwner");
+      return `<span class="tag ${mode}">${label}</span> <span>${text(roleKey)}</span>`;
+    }
+
+    function renderAccounts() {
+      document.getElementById("accountRows").innerHTML = accountProjects.map(project => `
+        <tr>
+          <td>${project.project}</td>
+          <td>${project.admin}</td>
+          <td><span class="tag ai">${project.ai}</span></td>
+          <td><span class="tag human">${project.human}</span></td>
+          <td>${project.scope[currentLang]}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderMarketing() {
+      document.getElementById("marketingRoleCards").innerHTML = marketingRoles.map(roleKey => {
+        const profile = roleProfiles[roleKey];
+        return `
+          <article class="card">
+            <h3>${text(roleKey)}</h3>
+            <div class="field-grid">
+              <div class="field"><label>${text("roleType")}</label><strong><span class="tag ${profile.mode}">${profile.mode === "hybrid" ? text("hybridOwner") : text("aiOwner")}</span></strong></div>
+              <div class="field"><label>${text("rolePermission")}</label><strong>${profile.permission[currentLang]}</strong></div>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      document.getElementById("channelMatrix").innerHTML = channelMatrix.map(channel => `
+        <article class="matrix-item">
+          <strong>${channel.name[currentLang]}</strong>
+          <div class="matrix-score">
+            <span>${text(channel.stage)}</span>
+            <b>${text("mkHealth")} ${channel.health}%</b>
+          </div>
+          <div class="progress" aria-label="${text("mkHealth")} ${channel.health}%" style="margin-top:10px;"><span style="width:${channel.health}%"></span></div>
+          <div class="value-row"><span>${channel.spend}</span><b>${channel.leads} Leads</b></div>
+          <p class="subtitle">${text("fieldOwner")}: ${ownerBadge(channel.ownerRole)}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("marketingDashboardRows").innerHTML = marketingDashboard.map(row => `
+        <tr><td>${row.metric[currentLang]}</td><td>${row.target}</td><td><strong>${row.actual}</strong></td><td>${row.conversion}<br>${ownerBadge(row.ownerRole)}</td></tr>
+      `).join("");
+
+      document.getElementById("marketingRows").innerHTML = marketingTactics.map(item => `
+        <tr>
+          <td>${item.channel[currentLang]}</td>
+          <td><span class="tag solar">${text(item.type)}</span></td>
+          <td><strong>${item.count}</strong></td>
+          <td>${ownerBadge(item.ownerRole)}</td>
+          <td>${item.impact[currentLang]}</td>
+        </tr>
+      `).join("");
+    }
+
+    function statusBadge(status) {
+      const key = status === "done" ? "statusDone" : status === "active" ? "statusActive" : status === "available" ? "statusAvailable" : "statusUpcoming";
+      const cls = status === "done" ? "done" : status === "active" ? "wait" : status === "available" ? "solar" : "";
+      return `<span class="tag ${cls}">${text(key)}</span>`;
+    }
+
+    function renderUserPortal() {
+      document.getElementById("customerJourneyGrid").innerHTML = customerJourneyItems.map((item, index) => `
+        <article class="journey-item" data-step="${index + 1}">
+          <strong>${text(item.key)}</strong>
+          <p>${item.detail[currentLang]}</p>
+          ${statusBadge(item.status)}
+        </article>
+      `).join("");
+
+      document.getElementById("customerCaseCards").innerHTML = customerCaseCards.map(item => `
+        <article class="card">
+          <h3>${item.title[currentLang]}</h3>
+          <div class="field-grid">
+            <div class="field"><label>${text("thStatus")}</label><strong>${text("complete")}</strong></div>
+            <div class="field"><label>${text("mkImpact")}</label><strong>${item.metric}</strong></div>
+          </div>
+          <p class="subtitle">${item.body[currentLang]}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("customerCredentialFields").innerHTML = customerCredentials.map(item => `
+        <div class="field"><label>${item.label[currentLang]}</label><strong>${item.value}</strong></div>
+      `).join("");
+
+      document.getElementById("customerServiceCards").innerHTML = customerServices.map(item => `
+        <article class="card">
+          <h3>${text(item.title)}</h3>
+          <div class="meta">${statusBadge("available")}</div>
+          <p class="subtitle">${item.body[currentLang]}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("customerActionList").innerHTML = customerActions.map(item => `
+        <label class="task">
+          <input type="checkbox">
+          <span><strong>${text(item.title)}</strong><p>${item.detail[currentLang]}</p></span>
+          <span class="priority ${item.priority === "hot" ? "hot" : item.priority === "mid" ? "mid" : ""}">${item.priority === "hot" ? text("priorityHot") : item.priority === "mid" ? text("priorityMid") : text("priorityNormal")}</span>
+        </label>
+      `).join("");
+    }
+
+    function renderOpsBoards() {
+      document.getElementById("surveyBoard").innerHTML = surveyStages.map(([labelKey, stage]) => {
+        const items = surveyItems.filter(item => item.stage === stage);
+        const cards = items.map(item => `
+          <article class="ops-card">
+            <strong>${item.project}</strong>
+            <div class="meta">
+              ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}
+            </div>
+            <div class="value-row"><span>${text("opsOwner")}</span><b>${item.owner}</b></div>
+            <div class="value-row"><span>${text("opsDue")}</span><b>${item.due}</b></div>
+            <p class="subtitle">${text("opsSla")}: ${item.sla[currentLang]}</p>
+            <p class="subtitle">${text("opsRisk")}: ${item.risk[currentLang]}</p>
+          </article>
+        `).join("");
+        return `
+          <div class="ops-lane">
+            <h3><span>${text(labelKey)}</span><b>${items.length}</b></h3>
+            ${cards}
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("dnoBoard").innerHTML = dnoStages.map(([labelKey, stage]) => {
+        const items = dnoItems.filter(item => item.stage === stage);
+        const cards = items.map(item => `
+          <article class="ops-card">
+            <strong>${item.project}</strong>
+            <div class="meta">
+              <span class="tag solar">${item.type}</span>
+              <span class="tag ${item.ref === "Rejected" || item.ref === "补料" ? "risk" : "wait"}">${item.ref}</span>
+            </div>
+            <div class="value-row"><span>${text("opsOwner")}</span><b>${item.owner}</b></div>
+            <div class="value-row"><span>${text("opsDue")}</span><b>${item.due}</b></div>
+            <p class="subtitle">${text("opsSla")}: ${item.sla[currentLang]}</p>
+            <p class="subtitle">${text("opsRisk")}: ${item.risk[currentLang]}</p>
+          </article>
+        `).join("");
+        return `
+          <div class="ops-lane">
+            <h3><span>${text(labelKey)}</span><b>${items.length}</b></h3>
+            ${cards}
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("surveyChecklistGrid").innerHTML = surveyChecklistItems.map(item => `
+        <article class="matrix-item">
+          <strong>${item.title[currentLang]}</strong>
+          <p class="subtitle">${item.body[currentLang]}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderConstructionOps() {
+      document.getElementById("constructionBoard").innerHTML = constructionStages.map(([labelKey, stage]) => {
+        const items = constructionItems.filter(item => item.stage === stage);
+        return `
+          <div class="ops-lane">
+            <h3><span>${text(labelKey)}</span><b>${items.length}</b></h3>
+            ${items.map(item => `
+              <article class="ops-card">
+                <strong>${item.project}</strong>
+                <div class="meta">${item.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}</div>
+                <div class="value-row"><span>${text("opsOwner")}</span><b>${item.owner}</b></div>
+                <div class="value-row"><span>${text("opsDue")}</span><b>${item.due}</b></div>
+                <p class="subtitle">${text("siteTask")}: ${item.task[currentLang]}</p>
+                <p class="subtitle">${text("siteEvidence")}: ${item.evidence[currentLang]}</p>
+              </article>
+            `).join("")}
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("dispatchRows").innerHTML = dispatchOrders.map(order => `
+        <tr><td>${order.order}</td><td>${order.team}</td><td><strong>${order.score}</strong></td><td><span class="tag wait">${order.status[currentLang]}</span></td></tr>
+      `).join("");
+
+      document.getElementById("gpsCards").innerHTML = gpsVehicles.map(vehicle => `
+        <article class="matrix-item">
+          <strong>${vehicle.vehicle}</strong>
+          <div class="matrix-score"><span>${vehicle.route}</span><b>${text("gpsEta")} ${vehicle.eta}</b></div>
+          <div class="progress" aria-label="${vehicle.progress}%" style="margin-top:10px;"><span style="width:${vehicle.progress}%"></span></div>
+          <p class="subtitle">${text("gpsLoad")}: ${vehicle.load[currentLang]}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("mainMaterialRows").innerHTML = mainMaterials.map(item => `
+        <tr><td>${item.item}</td><td><strong>${item.qty}</strong></td><td>${item.rule[currentLang]}</td></tr>
+      `).join("");
+
+      document.getElementById("auxMaterialRows").innerHTML = auxMaterials.map(item => `
+        <tr><td>${item.item}</td><td><strong>${item.qty}</strong></td><td>${item.rule[currentLang]}</td></tr>
+      `).join("");
+
+      document.getElementById("materialFormulaGrid").innerHTML = materialFormulaLinks.map(item => `
+        <article class="matrix-item">
+          <strong>${item.title}</strong>
+          <p class="subtitle">${item.body[currentLang]}</p>
+        </article>
+      `).join("");
+
+      document.getElementById("siteMediaCards").innerHTML = siteMedia.map(item => `
+        <article class="card">
+          <h3>${item.title[currentLang]}</h3>
+          <div class="field-grid">
+            <div class="field"><label>${text("mkCount")}</label><strong>${item.count}</strong></div>
+            <div class="field"><label>${text("mcsArchive")}</label><strong>${text("complete")}</strong></div>
+          </div>
+          <p class="subtitle">${item.body[currentLang]}</p>
+        </article>
+      `).join("");
+    }
+
+    function chartPoints(values, maxValue, width = 640, height = 230, pad = 28) {
+      return values.map((value, index) => {
+        const x = pad + index * ((width - pad * 2) / (values.length - 1));
+        const y = height - pad - (value / maxValue) * (height - pad * 2);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(" ");
+    }
+
+    function switchOperationMode(mode) {
+      operationMode = mode;
+      document.querySelectorAll(".mode-badge").forEach(button => {
+        button.classList.toggle("active", button.dataset.mode === mode);
+      });
+
+      const overlay = document.getElementById("modeOverlay");
+      const loader = document.getElementById("modeLoader");
+      const title = document.getElementById("modeTitle");
+      const body = document.getElementById("modeText");
+
+      if (mode === "ai") {
+        loader.className = "bot-loader";
+        title.textContent = currentLang === "zh" ? "智能体接管模式" : "AI Agent Takeover";
+        body.textContent = currentLang === "zh" ? "营销、工程、材料、配送智能体正在启动自主运营。" : "Marketing, engineering, material and delivery agents are starting autonomous operations.";
+      } else {
+        loader.className = "human-loader";
+        title.textContent = currentLang === "zh" ? "人工运营模式" : "Manual Operation Mode";
+        body.textContent = currentLang === "zh" ? "系统已切换到人工运营，智能体进入辅助建议状态。" : "The system is switching to manual operations; agents remain in advisory mode.";
+      }
+
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden", "false");
+      window.setTimeout(() => {
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+      }, 1450);
+    }
+
+    function renderEnergyCentre() {
+      const order = energyOrders.find(item => item.id === activeEnergyId) || energyOrders[0];
+      document.getElementById("energyAddressSwitch").innerHTML = energyOrders.map(item => `
+        <button class="chip ${item.id === order.id ? "active" : ""}" data-energy-address="${item.id}">${item.address}</button>
+      `).join("");
+
+      document.getElementById("energyMetrics").innerHTML = `
+        <div class="metric"><label>${text("solarToday")}</label><strong>${order.pv}</strong><div class="delta">${order.customer}</div></div>
+        <div class="metric"><label>${text("batterySoc")}</label><strong>${order.battery[currentLang].split("·").pop().trim()}</strong><div class="delta">${order.battery[currentLang]}</div></div>
+        <div class="metric"><label>${text("tradePrice")}</label><strong>${order.price}</strong><div class="delta">${order.partner}</div></div>
+        <div class="metric"><label>${text("exportRevenue")}</label><strong>${order.revenue}</strong><div class="delta">${text(order.seg)}</div></div>
+      `;
+
+      document.getElementById("orderEnergyFields").innerHTML = `
+        <div class="field"><label>${text("tradingPartner")}</label><strong>${order.partner}</strong></div>
+        <div class="field"><label>${text("batteryStatus")}</label><strong>${order.battery[currentLang]}</strong></div>
+        <div class="field"><label>${text("majorLoads")}</label><strong>${order.loads[currentLang]}</strong></div>
+        <div class="field"><label>${text("segStatus")}</label><strong>${text(order.seg)}</strong></div>
+      `;
+
+      const maxValue = Math.max(...order.curve.load, ...order.curve.pv, ...order.curve.export) * 1.15;
+      document.getElementById("energyChart").innerHTML = `
+        <svg viewBox="0 0 640 230" role="img" aria-label="${text("energyCurve")}">
+          <line x1="28" y1="202" x2="612" y2="202" stroke="#d6e0e9" />
+          <line x1="28" y1="28" x2="28" y2="202" stroke="#d6e0e9" />
+          <path d="M 28 155 C 120 120, 220 80, 612 70" fill="none" stroke="rgba(24,207,227,.08)" stroke-width="80" />
+          <polyline points="${chartPoints(order.curve.load, maxValue)}" fill="none" stroke="#244f78" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          <polyline points="${chartPoints(order.curve.pv, maxValue)}" fill="none" stroke="#18cfe3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          <polyline points="${chartPoints(order.curve.export, maxValue)}" fill="none" stroke="#8fb7d5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          <text x="28" y="220" fill="#68798a" font-size="12">06:00</text>
+          <text x="292" y="220" fill="#68798a" font-size="12">12:00</text>
+          <text x="575" y="220" fill="#68798a" font-size="12">22:00</text>
+        </svg>
+      `;
+
+      document.getElementById("segBoard").innerHTML = segStages.map(stage => {
+        const activeIndex = segStages.indexOf(order.seg);
+        const index = segStages.indexOf(stage);
+        const stateClass = index < activeIndex ? "done" : index === activeIndex ? "wait" : "";
+        return `
+          <div class="ops-lane">
+            <h3><span>${text(stage)}</span><b>${index < activeIndex ? "✓" : index === activeIndex ? "…" : ""}</b></h3>
+            <article class="ops-card">
+              <strong>${text(stage)}</strong>
+              <div class="meta"><span class="tag ${stateClass}">${index < activeIndex ? text("complete") : index === activeIndex ? text("todo") : text("segSla")}</span></div>
+              <p class="subtitle">${stage === "dnoConfirmation" ? "2-8 weeks" : stage === "onlineSegSubmit" ? "MCS / DNO / MPAN / Smart meter / Bank" : "SEG"}</p>
+            </article>
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("strategyList").innerHTML = order.strategy.map((item, index) => `
+        <label class="task">
+          <input type="checkbox" ${index === 0 ? "checked" : ""}>
+          <span><strong>${text("tradingStrategy")} ${index + 1}</strong><p>${item[currentLang]}</p></span>
+          <span class="priority ${index === 0 ? "hot" : "mid"}">${index === 0 ? text("priorityHot") : text("priorityMid")}</span>
+        </label>
+      `).join("");
+
+      document.getElementById("smartHomeCards").innerHTML = order.devices.map(device => `
+        <article class="card">
+          <h3>${device.name[currentLang]}</h3>
+          <div class="field-grid">
+            <div class="field"><label>${text("thStatus")}</label><strong>${device.state[currentLang]}</strong></div>
+            <div class="field"><label>${text("remoteControl")}</label><strong>${device.active ? text("complete") : text("todo")}</strong></div>
+          </div>
+        </article>
+      `).join("");
+
+      document.querySelectorAll("[data-energy-address]").forEach(button => {
+        button.addEventListener("click", () => {
+          activeEnergyId = button.dataset.energyAddress;
+          renderEnergyCentre();
+        });
+      });
+    }
+
+    function openLead(id) {
+      currentLeadId = id;
+      const lead = leads.find(item => item.id === id);
+      document.getElementById("drawerTitle").textContent = lead.name;
+      document.getElementById("drawerSubtitle").textContent = `${lead.postcode} · ${lead.region} · ${lead.tech}`;
+      document.getElementById("drawerBody").innerHTML = `
+        <div class="field-grid">
+          <div class="field"><label>${text("opportunityValue")}</label><strong>${lead.value}</strong></div>
+          <div class="field"><label>${text("grantRevenue")}</label><strong>${lead.grant}</strong></div>
+          <div class="field"><label>${text("currentStage")}</label><strong>${stages.find(s => s[0] === lead.stage)[1][currentLang]}</strong></div>
+          <div class="field"><label>${text("risk")}</label><strong>${lead.risk[currentLang]}</strong></div>
+        </div>
+        <section class="panel" style="box-shadow:none;margin-top:14px;padding:14px;">
+          <div class="panel-head"><h2>${text("nextStep")}</h2><span class="tag wait">${lead.next[currentLang]}</span></div>
+          <p class="subtitle">${text("drawerAdvice")}</p>
+        </section>
+        <section class="panel" style="box-shadow:none;margin-top:14px;padding:14px;">
+          <div class="panel-head"><h2>${text("complianceCheck")}</h2></div>
+          <div class="split-list">
+            <label class="task"><input type="checkbox" checked><span><strong>${text("identityCheck")}</strong><p>${text("identityCheckBody")}</p></span><span class="priority">${text("complete")}</span></label>
+            <label class="task"><input type="checkbox"><span><strong>${text("mcsMatch")}</strong><p>${text("mcsMatchBody")}</p></span><span class="priority mid">${text("todo")}</span></label>
+            <label class="task"><input type="checkbox"><span><strong>${text("evidenceCheck")}</strong><p>${text("evidenceCheckBody")}</p></span><span class="priority mid">${text("todo")}</span></label>
+          </div>
+        </section>
+      `;
+      document.getElementById("drawer").classList.add("open");
+      document.getElementById("drawer").setAttribute("aria-hidden", "false");
+    }
+
+    function showView(viewId, activeButton = null) {
+        document.querySelectorAll(".nav button, .view-shortcut").forEach(item => item.classList.remove("active"));
+        document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+        if (activeButton) activeButton.classList.add("active");
+        document.querySelectorAll(`[data-view="${viewId}"], [data-view-shortcut="${viewId}"]`).forEach(item => item.classList.add("active"));
+        document.getElementById(viewId).classList.add("active");
+    }
+
+    document.querySelectorAll(".nav button").forEach(button => {
+      button.addEventListener("click", () => {
+        showView(button.dataset.view, button);
+      });
+    });
+
+    document.querySelectorAll(".view-shortcut").forEach(button => {
+      button.addEventListener("click", () => {
+        showView(button.dataset.viewShortcut, button);
+      });
+    });
+
+    document.querySelectorAll("#dashboardFilters .chip").forEach(button => {
+      button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll("#dashboardFilters .chip").forEach(item => item.classList.remove("active"));
+        button.classList.add("active");
+        renderBoard();
+      });
+    });
+
+    search.addEventListener("input", renderBoard);
+    document.getElementById("toggleTasks").addEventListener("click", event => {
+      hotOnly = !hotOnly;
+      event.currentTarget.classList.toggle("active", hotOnly);
+      renderTasks();
+    });
+    document.getElementById("closeDrawer").addEventListener("click", () => {
+      document.getElementById("drawer").classList.remove("open");
+      document.getElementById("drawer").setAttribute("aria-hidden", "true");
+    });
+    document.getElementById("newLeadBtn").addEventListener("click", () => openLead(1));
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      const rows = leads.map(lead => `${lead.name},${lead.postcode},${lead.tech},${lead.stage},${lead.value}`).join("\\n");
+      const blob = new Blob([`customer,postcode,technology,stage,value\\n${rows}`], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "uk-renewables-crm-pipeline.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+    document.getElementById("versionBtn").addEventListener("click", () => {
+      showView("versions");
+    });
+    document.querySelectorAll(".lang-toggle button").forEach(button => {
+      button.addEventListener("click", () => applyLanguage(button.dataset.lang));
+    });
+    document.querySelectorAll(".mode-badge").forEach(button => {
+      button.addEventListener("click", () => switchOperationMode(button.dataset.mode));
+    });
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+    });
+
+    document.getElementById("installAppBtn").addEventListener("click", async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        return;
+      }
+      window.alert(text("installHint"));
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+
+    applyLanguage("zh");
+    window.setTimeout(() => {
+      const launchOverlay = document.getElementById("launchOverlay");
+      launchOverlay.classList.add("hide");
+      launchOverlay.setAttribute("aria-hidden", "true");
+    }, 3000);
+  </script>
+</body>
+</html>

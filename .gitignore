@@ -1,0 +1,25 @@
+# ArkGrid secrets
+outputs/private/config.php
+outputs/private/*.local.php
+.env
+*.env
+
+# Logs / runtime
+*.log
+logs/
+tmp/
+cache/
+storage/
+runtime/
+
+# Uploaded/generated files
+uploads/
+var/
+backups/
+*.sql.gz
+*.tar.gz
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
