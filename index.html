@@ -1151,9 +1151,232 @@
       background: white;
     }
 
+    .nav-group {
+      margin-top: 4px;
+    }
+
+    .nav-group-label {
+      display: block;
+      padding: 8px 12px 4px;
+      color: #8aa8b8;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .nav-sub button {
+      padding-left: 28px;
+      min-height: 38px;
+      font-size: 13px;
+    }
+
+    .lc-view {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-height: calc(100vh - 140px);
+    }
+
+    .lc-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px 0 16px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+    }
+
+    .lc-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: var(--ink);
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .lc-filter::after {
+      content: "▾";
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .lc-toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .lc-icon-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .lc-icon-btn:hover {
+      border-color: #b8c8d4;
+      color: var(--ink);
+    }
+
+    .lc-board {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(220px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      align-items: start;
+      padding-bottom: 12px;
+      flex: 1;
+    }
+
+    .lc-lane {
+      min-width: 220px;
+      background: #f0f3f6;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 420px;
+    }
+
+    .lc-lane-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 2px 2px 8px;
+    }
+
+    .lc-stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .lc-stage-pill b {
+      font-size: 11px;
+      font-weight: 800;
+      opacity: 0.92;
+    }
+
+    .lc-stage-pill.lead { background: #e8913a; }
+    .lc-stage-pill.opportunity { background: #8fbf8f; color: #1f3d24; }
+    .lc-stage-pill.negotiations { background: #2f6b52; }
+    .lc-stage-pill.deal { background: #7a6ec8; }
+    .lc-stage-pill.delivery { background: #8d98a5; }
+
+    .lc-contact-card {
+      background: white;
+      border: 1px solid #d9e2ea;
+      border-radius: 8px;
+      padding: 12px 12px 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .lc-contact-card:hover {
+      border-color: #b8c8d4;
+      box-shadow: 0 4px 14px rgba(16, 26, 39, .08);
+    }
+
+    .lc-contact-card h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f5f5f;
+      line-height: 1.3;
+    }
+
+    .lc-contact-row {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 4px 8px;
+      margin-bottom: 4px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .lc-contact-row span:first-child {
+      color: var(--muted);
+    }
+
+    .lc-contact-row a {
+      color: #2b6cb0;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .lc-contact-row a:hover {
+      text-decoration: underline;
+    }
+
+    .lc-contact-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #edf2f6;
+    }
+
+    .lc-activity {
+      font-size: 12px;
+      color: #2b6cb0;
+      text-decoration: none;
+    }
+
+    .lc-activity:hover {
+      text-decoration: underline;
+    }
+
+    .lc-card-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .lc-card-actions button {
+      width: 26px;
+      height: 26px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: #8a9bab;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .lc-card-actions button:hover {
+      background: #f0f3f6;
+      color: var(--ink);
+    }
+
     @media (max-width: 1100px) {
       .app { grid-template-columns: 76px minmax(0, 1fr); }
-      .brand div, .nav span, .side-card, .quota-card { display: none; }
+      .brand div, .nav span, .side-card, .quota-card, .nav-group-label { display: none; }
       .brand { justify-content: center; padding-left: 0; padding-right: 0; }
       .nav button { justify-content: center; padding: 0; }
       .workspace { grid-template-columns: 1fr; }
@@ -1170,7 +1393,13 @@
         grid-template-columns: none;
         scroll-snap-type: x proximity;
       }
-      .lane, .ops-lane { scroll-snap-align: start; }
+      .lane, .ops-lane, .lc-lane { scroll-snap-align: start; }
+      .lc-board {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(240px, 78vw);
+        grid-template-columns: none;
+        scroll-snap-type: x proximity;
+      }
     }
 
     @media (max-width: 720px) {
@@ -1389,6 +1618,12 @@
 
       <nav class="nav">
         <button class="active" data-view="dashboard" title="仪表盘" data-title-i18n="navDashboard"><span class="ico">⌂</span><span data-i18n="navDashboard">仪表盘</span></button>
+        <div class="nav-group" aria-label="Lead Centre">
+          <span class="nav-group-label" data-i18n="navLeadCentre">Lead Centre</span>
+          <div class="nav-sub">
+            <button data-view="leadCentreContacts" title="Contacts" data-title-i18n="navContacts"><span class="ico">◉</span><span data-i18n="navContacts">Contacts</span></button>
+          </div>
+        </div>
         <button data-view="pipeline" title="销售管道" data-title-i18n="navPipeline"><span class="ico">▦</span><span data-i18n="navPipeline">销售管道</span></button>
         <button data-view="marketing" title="营销中心" data-title-i18n="navMarketing"><span class="ico">◈</span><span data-i18n="navMarketing">营销中心</span></button>
         <button data-view="projects" title="交付中心" data-title-i18n="navProjects"><span class="ico">⚙</span><span data-i18n="navProjects">交付中心</span></button>
@@ -1473,6 +1708,23 @@
             </div>
             <div class="split-list" id="taskList"></div>
           </aside>
+        </div>
+      </section>
+
+      <section class="view" id="leadCentreContacts">
+        <div class="lc-view">
+          <div class="lc-toolbar" aria-label="Contact filters">
+            <button class="lc-filter" type="button" data-i18n="lcFilterOwner">Contact owner</button>
+            <button class="lc-filter" type="button" data-i18n="lcFilterCreateDate">Create date</button>
+            <button class="lc-filter" type="button" data-i18n="lcFilterLastActivity">Last activity date</button>
+            <button class="lc-filter" type="button" data-i18n="lcFilterLeadStatus">Lead status</button>
+            <div class="lc-toolbar-actions">
+              <button class="lc-icon-btn" type="button" title="Add filter" aria-label="Add filter">+</button>
+              <button class="lc-icon-btn" type="button" title="Edit filters" aria-label="Edit filters">✎</button>
+              <button class="lc-filter" type="button" data-i18n="lcAdvancedFilters">Advanced filters</button>
+            </div>
+          </div>
+          <div class="lc-board" id="contactsBoard" aria-label="Contacts pipeline"></div>
         </div>
       </section>
 
@@ -1955,6 +2207,8 @@
       zh: {
         navAria: "主导航",
         navDashboard: "仪表盘",
+        navLeadCentre: "Lead Centre",
+        navContacts: "Contacts",
         navPipeline: "销售管道",
         navProjects: "交付中心",
         navCustomers: "客户档案",
@@ -2106,6 +2360,19 @@
         filterHeat: "热泵",
         filterSolar: "光伏/储能",
         emptyLeads: "没有匹配的线索。",
+        lcFilterOwner: "Contact owner",
+        lcFilterCreateDate: "Create date",
+        lcFilterLastActivity: "Last activity date",
+        lcFilterLeadStatus: "Lead status",
+        lcAdvancedFilters: "Advanced filters",
+        lcPhone: "Phone number:",
+        lcEmail: "Email:",
+        lcOwner: "Contact owner:",
+        lcStageLead: "Lead",
+        lcStageOpportunity: "Opportunity",
+        lcStageNegotiations: "Negotiations",
+        lcStageDeal: "Deal",
+        lcStageDelivery: "Delivery",
         tasks: "行动清单",
         hotOnly: "只看高优先级",
         salesOpps: "销售机会",
@@ -2289,6 +2556,8 @@
       en: {
         navAria: "Primary navigation",
         navDashboard: "Dashboard",
+        navLeadCentre: "Lead Centre",
+        navContacts: "Contacts",
         navPipeline: "Pipeline",
         navProjects: "Delivery Centre",
         navCustomers: "Customers",
@@ -2440,6 +2709,19 @@
         filterHeat: "Heat pump",
         filterSolar: "Solar/storage",
         emptyLeads: "No matching leads.",
+        lcFilterOwner: "Contact owner",
+        lcFilterCreateDate: "Create date",
+        lcFilterLastActivity: "Last activity date",
+        lcFilterLeadStatus: "Lead status",
+        lcAdvancedFilters: "Advanced filters",
+        lcPhone: "Phone number:",
+        lcEmail: "Email:",
+        lcOwner: "Contact owner:",
+        lcStageLead: "Lead",
+        lcStageOpportunity: "Opportunity",
+        lcStageNegotiations: "Negotiations",
+        lcStageDeal: "Deal",
+        lcStageDelivery: "Delivery",
         tasks: "Action List",
         hotOnly: "High priority only",
         salesOpps: "Sales Opportunities",
@@ -2641,6 +2923,34 @@
       ["survey", { zh: "勘察", en: "Survey" }],
       ["quote", { zh: "报价", en: "Quote" }],
       ["install", { zh: "安装/交付", en: "Install / Handover" }]
+    ];
+
+    const contactStages = [
+      ["lead", "lcStageLead", "lead", 21],
+      ["opportunity", "lcStageOpportunity", "opportunity", 348],
+      ["negotiations", "lcStageNegotiations", "negotiations", 42],
+      ["deal", "lcStageDeal", "deal", 45],
+      ["delivery", "lcStageDelivery", "delivery", 32]
+    ];
+
+    const contacts = [
+      { id: 101, stage: "lead", name: "Mr. Parimal mehta", phone: "+44 7700 900 421", email: "parimal.mehta@example.com", owner: "jelly li", activity: { zh: "通话 2 分钟前", en: "Call 2 minutes ago" } },
+      { id: 102, stage: "lead", name: "Rubna Asmat", phone: "+44 7700 900 882", email: "rubna.asmat@example.com", owner: "jelly li", activity: { zh: "备注 7 分钟前", en: "Note 7 minutes ago" } },
+      { id: 103, stage: "lead", name: "Mrs. Thompson", phone: "+44 161 496 0321", email: "m.thompson@example.com", owner: "Oliver Smith", activity: { zh: "邮件 1 小时前", en: "Email an hour ago" } },
+      { id: 104, stage: "lead", name: "Priya Singh", phone: "+44 113 496 7788", email: "priya.singh@example.com", owner: "Mia Chen", activity: { zh: "会议 5 小时后", en: "Meeting in 5 hours" } },
+      { id: 105, stage: "opportunity", name: "Asha Patel", phone: "+44 20 7946 0182", email: "asha.patel@example.com", owner: "jelly li", activity: { zh: "通话 12 分钟前", en: "Call 12 minutes ago" } },
+      { id: 106, stage: "opportunity", name: "Green Acre Homes", phone: "+44 1865 240 118", email: "projects@greenacre.example", owner: "Oliver Smith", activity: { zh: "备注 25 分钟前", en: "Note 25 minutes ago" } },
+      { id: 107, stage: "opportunity", name: "Liam O'Connor", phone: "+44 29 2019 8821", email: "liam.oconnor@example.com", owner: "Sales Ops", activity: { zh: "邮件 3 小时前", en: "Email 3 hours ago" } },
+      { id: 108, stage: "opportunity", name: "Harbour Lettings", phone: "+44 1273 496 220", email: "ops@harbourlettings.example", owner: "Daniel Wu", activity: { zh: "会议 明天 10:00", en: "Meeting tomorrow 10:00" } },
+      { id: 109, stage: "negotiations", name: "Northfield School", phone: "+44 121 496 3300", email: "estates@northfield.example", owner: "Emma Lewis", activity: { zh: "通话 1 天前", en: "Call 1 day ago" } },
+      { id: 110, stage: "negotiations", name: "Warm Streets CIC", phone: "+44 191 496 7711", email: "delivery@warmstreets.example", owner: "Daniel Wu", activity: { zh: "备注 2 天前", en: "Note 2 days ago" } },
+      { id: 111, stage: "negotiations", name: "Croydon Community Trust", phone: "+44 20 8765 4412", email: "energy@croydontrust.example", owner: "Mia Chen", activity: { zh: "邮件 昨天", en: "Email yesterday" } },
+      { id: 112, stage: "deal", name: "Richmond Solar Co-op", phone: "+44 20 8940 1188", email: "admin@richmondsolar.example", owner: "jelly li", activity: { zh: "会议 2 小时前", en: "Meeting 2 hours ago" } },
+      { id: 113, stage: "deal", name: "Ealing Retrofit Ltd", phone: "+44 20 8998 3300", email: "quotes@ealingretrofit.example", owner: "Oliver Smith", activity: { zh: "通话 45 分钟前", en: "Call 45 minutes ago" } },
+      { id: 114, stage: "deal", name: "Midlands PV Group", phone: "+44 115 496 8820", email: "sales@midlandspv.example", owner: "Sales Ops", activity: { zh: "备注 4 小时前", en: "Note 4 hours ago" } },
+      { id: 115, stage: "delivery", name: "Patel residence", phone: "+44 20 7946 0821", email: "asha.patel@example.com", owner: "Delivery Manager", activity: { zh: "邮件 30 分钟前", en: "Email 30 minutes ago" } },
+      { id: 116, stage: "delivery", name: "60 Lindisfarne, Tamworth", phone: "+44 1827 496 110", email: "homeowner@lindisfarne.example", owner: "Daniel Wu", activity: { zh: "通话 6 小时前", en: "Call 6 hours ago" } },
+      { id: 117, stage: "delivery", name: "Oxford Storage Crew", phone: "+44 1865 496 770", email: "crew@oxfordstorage.example", owner: "Emma Lewis", activity: { zh: "会议 下周", en: "Meeting next week" } }
     ];
 
     const tasks = [
@@ -2986,6 +3296,7 @@
         button.classList.toggle("active", button.dataset.lang === lang);
       });
       renderBoard();
+      renderContactsBoard();
       renderTasks();
       renderTables();
       renderAccounts();
@@ -3035,6 +3346,72 @@
       document.querySelectorAll(".lead-card").forEach(card => {
         card.addEventListener("click", () => openLead(Number(card.dataset.id)));
       });
+    }
+
+    function renderContactsBoard() {
+      const boardEl = document.getElementById("contactsBoard");
+      if (!boardEl) {
+        return;
+      }
+
+      boardEl.innerHTML = contactStages.map(([key, labelKey, pillClass, total]) => {
+        const cards = contacts.filter(contact => contact.stage === key).map(contact => `
+          <article class="lc-contact-card" data-contact-id="${contact.id}">
+            <h3>${contact.name}</h3>
+            <div class="lc-contact-row"><span>${text("lcPhone")}</span><a href="tel:${contact.phone.replace(/\s/g, "")}">${contact.phone}</a></div>
+            <div class="lc-contact-row"><span>${text("lcEmail")}</span><a href="mailto:${contact.email}">${contact.email}</a></div>
+            <div class="lc-contact-row"><span>${text("lcOwner")}</span><span>${contact.owner}</span></div>
+            <div class="lc-contact-footer">
+              <a class="lc-activity" href="#">${contact.activity[currentLang]}</a>
+              <div class="lc-card-actions">
+                <button type="button" title="Edit" aria-label="Edit">✎</button>
+                <button type="button" title="More" aria-label="More">☰</button>
+              </div>
+            </div>
+          </article>
+        `).join("");
+
+        return `
+          <section class="lc-lane" aria-label="${text(labelKey)}">
+            <div class="lc-lane-head">
+              <span class="lc-stage-pill ${pillClass}">${text(labelKey)} <b>${total}</b></span>
+            </div>
+            ${cards}
+          </section>
+        `;
+      }).join("");
+
+      boardEl.querySelectorAll(".lc-contact-card").forEach(card => {
+        card.addEventListener("click", event => {
+          if (event.target.closest(".lc-card-actions, .lc-activity")) {
+            return;
+          }
+          const contact = contacts.find(item => item.id === Number(card.dataset.contactId));
+          if (contact) {
+            openContact(contact);
+          }
+        });
+      });
+    }
+
+    function openContact(contact) {
+      const stageMeta = contactStages.find(([key]) => key === contact.stage);
+      document.getElementById("drawerTitle").textContent = contact.name;
+      document.getElementById("drawerSubtitle").textContent = `${contact.owner} · ${text(stageMeta[1])}`;
+      document.getElementById("drawerBody").innerHTML = `
+        <div class="field-grid">
+          <div class="field"><label>${text("lcPhone")}</label><strong>${contact.phone}</strong></div>
+          <div class="field"><label>${text("lcEmail")}</label><strong>${contact.email}</strong></div>
+          <div class="field"><label>${text("lcOwner")}</label><strong>${contact.owner}</strong></div>
+          <div class="field"><label>${text("lcFilterLastActivity")}</label><strong>${contact.activity[currentLang]}</strong></div>
+        </div>
+        <section class="panel" style="box-shadow:none;margin-top:14px;padding:14px;">
+          <div class="panel-head"><h2>${text("nextStep")}</h2><span class="tag wait">${contact.activity[currentLang]}</span></div>
+          <p class="subtitle">${text("drawerAdvice")}</p>
+        </section>
+      `;
+      document.getElementById("drawer").classList.add("open");
+      document.getElementById("drawer").setAttribute("aria-hidden", "false");
     }
 
     function renderTasks() {
